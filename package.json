@@ -9,7 +9,8 @@
     "build": "nest build",
     "format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\"",
     "start": "nest start",
-    "start:dev": "nest start --watch",
+    "start:dev": "nest start insu-api --watch",
+    "start:dev:batch": "nest start insu-batch --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/apps/insurance-ai/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
@@ -20,7 +21,10 @@
     "test:e2e": "jest --config ./apps/insurance-ai/test/jest-e2e.json"
   },
   "dependencies": {
+    "@as-integrations/express5": "^1.1.2",
+    "@nestjs/apollo": "^13.4.0",
     "@nestjs/common": "^11.0.1",
+    "@nestjs/config": "^4.0.4",
     "@nestjs/core": "^11.0.1",
     "@nestjs/graphql": "^13.4.0",
     "@nestjs/mongoose": "^11.0.4",

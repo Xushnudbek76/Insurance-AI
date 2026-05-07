@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json.schemastore.org/nest-cli",
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "apps/insurance-ai/src",
+  "compilerOptions": {
+    "deleteOutDir": true,
+    "webpack": true,
+    "tsConfigPath": "apps/insurance-ai/tsconfig.app.json"
+  },
+  "monorepo": true,
+  "root": "apps/insurance-ai",
+  "projects": {
+    "insu-api": {
+      "type": "application",
+      "root": "apps/insu-api",
+      "entryFile": "main",
+      "sourceRoot": "apps/insu-api/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/insu-api/tsconfig.app.json"
+      }
+    },
+    "insu-batch": {
+      "type": "application",
+      "root": "apps/insu-batch",
+      "entryFile": "main",
+      "sourceRoot": "apps/insu-batch/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/insu-batch/tsconfig.app.json"
+      }
+    },
+    "insurance-ai": {
+      "type": "application",
+      "root": "apps/insurance-ai",
+      "entryFile": "main",
+      "sourceRoot": "apps/insurance-ai/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/insurance-ai/tsconfig.app.json"
+      }
+    }
+  }
+}

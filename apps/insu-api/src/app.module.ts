@@ -21,9 +21,10 @@ import { T } from './libs/types/common';
         const graphQLformattedError = {
           code: error?.extensions.code,
           message:
-            error?.extensions?.exception?.response.message ||
-            error?.extensions?.response.message ||
-            error?.message,
+            error?.extensions?.exception?.response?.message ||
+            error?.extensions?.response?.message ||
+            error?.message ||
+            'Unknown Error',
         };
         console.log('GRAPHQL GLOBAL ERR:', graphQLformattedError);
         return graphQLformattedError;

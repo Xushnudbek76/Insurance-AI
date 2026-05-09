@@ -5,24 +5,24 @@ import { MemberAuthType, MemberStatus, MemberType } from '../enums/member.enum';
 @ObjectType()
 export class Member {
   @Field(() => String)
-  _id: ObjectId | undefined;
+  _id: ObjectId;
 
   @Field(() => MemberType)
-  memberType: MemberType | undefined;
+  memberType: MemberType;
 
   @Field(() => MemberStatus)
-  memberStatus: MemberStatus | undefined;
+  memberStatus: MemberStatus;
 
   @Field(() => MemberAuthType)
-  memberAuthType: MemberAuthType | undefined;
+  memberAuthType: MemberAuthType;
 
   @Field(() => String)
-  memberPhone: string | undefined;
+  memberPhone: string;
 
   @Field(() => String)
-  memberNick: string | undefined;
+  memberNick: string;
 
-  memberPassword?: string;
+  memberPassword: string;
 
   @Field(() => String, { nullable: true })
   memberFullName?: string;
@@ -91,7 +91,7 @@ export class TotalCounter {
 @ObjectType()
 export class Members {
   @Field(() => [Member])
-  list: Member[] | undefined;
+  list: Member[];
 
   @Field(() => [TotalCounter], { nullable: true })
   metaCounter?: TotalCounter;

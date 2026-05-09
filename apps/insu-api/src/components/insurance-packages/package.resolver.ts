@@ -1,6 +1,7 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { ObjectId } from 'mongoose';
+import { Policy } from '../../libs/dto/policy/policy';
 import { AuthMember } from '../auth/decorators/authMember.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { AuthGuard } from '../auth/guards/auth.guard';
@@ -19,10 +20,14 @@ import {
 } from '../../libs/dto/package/package.update';
 import { Package, Packages } from '../../libs/dto/package/package';
 import { PackageService } from './package.service';
+import { PolicyService } from '../policy/policy.service';
 
 @Resolver()
 export class PackageResolver {
-  constructor(private readonly packageService: PackageService) {}
+  constructor(
+    private readonly packageService: PackageService,
+    private readonly policyService: PolicyService,
+  ) {}
 
   @Roles(MemberType.AGENT)
   @UseGuards(RolesGuard)
@@ -33,6 +38,21 @@ export class PackageResolver {
   ): Promise<Package> {
     console.log('Mutation: createPackage');
     return this.packageService.createPackage(memberId, input);
+  }
+
+  @UseGuards(AuthGuard)
+  @Mutation(() => Policy)
+  public async buyPackage(
+    @Args('packageId') input: string,
+    @AuthMember('_id') memberId: ObjectId,
+    @AuthMember('memberNick') memberNick: string,
+  ): Promise<Policy> {
+    console.log('Mutation: buyPackage');
+    return this.policyService.purchasePolicy(
+      memberId,
+      memberNick,
+      shapeIntoMongoObjectId(input),
+    );
   }
 
   @UseGuards(WithoutGuard)

@@ -1,3 +1,5 @@
+import { registerEnumType } from '@nestjs/graphql';
+
 export enum PolicyStatus {
   ACTIVE = 'ACTIVE',
   INACTIVE = 'INACTIVE',
@@ -5,3 +7,6 @@ export enum PolicyStatus {
   EXPIRED = 'EXPIRED',
   PENDING = 'PENDING',
 }
+registerEnumType(PolicyStatus, {
+  name: 'PolicyStatus',
+});

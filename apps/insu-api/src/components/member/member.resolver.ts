@@ -5,8 +5,8 @@ import {
   LoginInput,
   MemberInput,
   MembersInquiry,
-} from '../../libs/dto/member.input';
-import { Member, Members } from '../../libs/dto/member';
+} from '../../libs/dto/member/member.input';
+import { Member, Members } from '../../libs/dto/member/member';
 import { MemberType } from '../../libs/enums/member.enum';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -20,7 +20,7 @@ import { WithoutGuard } from '../auth/guards/without.guard';
 import { ObjectId } from 'mongoose';
 import { AuthMember } from '../auth/decorators/authMember.decorator';
 import { AuthGuard } from '../auth/guards/auth.guard';
-import { MemberUpdate } from '../../libs/dto/member.update';
+import { MemberUpdate } from '../../libs/dto/member/member.update';
 import { createWriteStream } from 'fs';
 import { Message } from '../../libs/enums/common.enum';
 import { GraphQLUpload, FileUpload } from 'graphql-upload';

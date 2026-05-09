@@ -12,12 +12,12 @@ import {
   AgentPackagesInquiry,
   PackageInput,
   PackagesInquiry,
-} from '../../libs/dto/package.input';
+} from '../../libs/dto/package/package.input';
 import {
   AllPackagesInquiry,
   PackageUpdate,
-} from '../../libs/dto/package.update';
-import { Package, Packages } from '../../libs/dto/package';
+} from '../../libs/dto/package/package.update';
+import { Package, Packages } from '../../libs/dto/package/package';
 import { PackageService } from './package.service';
 
 @Resolver()

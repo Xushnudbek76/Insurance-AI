@@ -1,14 +1,22 @@
 import { registerEnumType } from '@nestjs/graphql';
 
-export enum PackageCategory {
+export enum InsuranceType {
+  TERM_LIFE = 'TERM_LIFE',
+  WHOLE_LIFE = 'WHOLE_LIFE',
+  PET = 'PET',
+  CRITICAL_ILLNESS = 'CRITICAL_ILLNESS',
+  DISABILITY = 'DISABILITY',
+  TRAVEL = 'TRAVEL',
+  CYBER_LIABILITY = 'CYBER_LIABILITY',
+  PROFESSIONAL_INDEMNITY = 'PROFESSIONAL_INDEMNITY',
+  LEGAL_EXPENSE = 'LEGAL_EXPENSE',
+  ACCIDENT = 'ACCIDENT',
   HEALTH = 'HEALTH',
-  LIFE = 'LIFE',
   AUTO = 'AUTO',
   HOME = 'HOME',
-  TRAVEL = 'TRAVEL',
 }
-registerEnumType(PackageCategory, {
-  name: 'PackageCategory',
+registerEnumType(InsuranceType, {
+  name: 'InsuranceType',
 });
 
 export enum PackageStatus {

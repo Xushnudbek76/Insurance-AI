@@ -1,8 +1,9 @@
 import { Field, InputType, Int } from '@nestjs/graphql';
 import { IsIn, IsNotEmpty, IsOptional, Length, Min } from 'class-validator';
-import { MemberAuthType, MemberStatus, MemberType } from '../enums/member.enum';
-import { availableAgentsSorts, availableMembersSorts } from '../config';
-import { Direction } from '../enums/common.enum';
+import { MemberAuthType, MemberStatus, MemberType } from '../../enums/member.enum';
+import { availableAgentsSorts, availableMembersSorts } from '../../config';
+import { Direction } from '../../enums/common.enum';
+
 @InputType()
 export class MemberInput {
   @IsNotEmpty()
@@ -83,6 +84,7 @@ class MIsearch {
   @IsOptional()
   @Field(() => MemberType, { nullable: true })
   memberType: MemberType;
+
   @IsNotEmpty()
   @Field(() => String, { nullable: true })
   text?: string;

@@ -7,7 +7,7 @@ import {
   Min,
 } from 'class-validator';
 import { ObjectId } from 'mongoose';
-import { PackageCategory, PackageStatus } from '../enums/package.enum';
+import { InsuranceType, PackageStatus } from '../../enums/package.enum';
 import { AgentPackagesInquiry, PackagesInquiry } from './package.input';
 
 @InputType()
@@ -17,8 +17,8 @@ export class PackageUpdate {
   _id?: ObjectId;
 
   @IsOptional()
-  @Field(() => PackageCategory, { nullable: true })
-  packageCategory?: PackageCategory;
+  @Field(() => InsuranceType, { nullable: true })
+  packageType?: InsuranceType;
 
   @IsOptional()
   @Field(() => PackageStatus, { nullable: true })

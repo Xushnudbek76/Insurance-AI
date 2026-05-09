@@ -1,5 +1,6 @@
 import { Field, InputType, Int } from '@nestjs/graphql';
 import {
+  ArrayNotEmpty,
   IsArray,
   IsIn,
   IsNotEmpty,
@@ -7,8 +8,8 @@ import {
   IsString,
   Min,
 } from 'class-validator';
-import { Direction } from '../enums/common.enum';
-import { PackageCategory, PackageStatus } from '../enums/package.enum';
+import { Direction } from '../../enums/common.enum';
+import { InsuranceType, PackageStatus } from '../../enums/package.enum';
 
 export const availablePackageSorts = [
   'createdAt',
@@ -22,8 +23,8 @@ export const availablePackageSorts = [
 @InputType()
 export class PackageInput {
   @IsNotEmpty()
-  @Field(() => PackageCategory)
-  packageCategory: PackageCategory;
+  @Field(() => InsuranceType)
+  packageType: InsuranceType;
 
   @IsNotEmpty()
   @Field(() => String)
@@ -69,8 +70,8 @@ export class PackageInput {
 @InputType()
 class PackageSearch {
   @IsOptional()
-  @Field(() => PackageCategory, { nullable: true })
-  packageCategory?: PackageCategory;
+  @Field(() => InsuranceType, { nullable: true })
+  packageType?: InsuranceType;
 
   @IsOptional()
   @Field(() => PackageStatus, { nullable: true })
@@ -138,4 +139,25 @@ export class AgentPackagesInquiry {
   @IsNotEmpty()
   @Field(() => AgentPackageSearch)
   search: AgentPackageSearch;
+}
+
+@InputType()
+export class InsuranceRecommendationInput {
+  @ArrayNotEmpty()
+  @Field(() => [InsuranceType])
+  types: InsuranceType[];
+
+  @IsOptional()
+  @Min(0)
+  @Field(() => Int, { nullable: true })
+  age?: number;
+
+  @IsOptional()
+  @Min(0)
+  @Field(() => Int, { nullable: true })
+  budget?: number;
+
+  @IsOptional()
+  @Field(() => String, { nullable: true })
+  text?: string;
 }

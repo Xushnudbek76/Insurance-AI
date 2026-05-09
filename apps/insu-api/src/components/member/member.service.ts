@@ -12,13 +12,13 @@ import {
   LoginInput,
   MemberInput,
   MembersInquiry,
-} from '../../libs/dto/member.input';
-import { Member, Members } from '../../libs/dto/member';
+} from '../../libs/dto/member/member.input';
+import { Member, Members } from '../../libs/dto/member/member';
 import { ViewService } from '../view/view.service';
 import { AuthService } from '../auth/auth.service';
 import { ViewGroup } from '../../libs/enums/view.enum';
 import { T } from '../../libs/types/common';
-import { MemberUpdate } from '../../libs/dto/member.update';
+import { MemberUpdate } from '../../libs/dto/member/member.update';
 
 @Injectable()
 export class MemberService {

@@ -15,5 +15,6 @@ import { PackageService } from './package.service';
     ViewModule,
   ],
   providers: [PackageResolver, PackageService],
+  exports: [PackageService],
 })
 export class InsuranceModule {}

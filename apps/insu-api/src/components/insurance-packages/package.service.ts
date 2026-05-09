@@ -7,14 +7,15 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId } from 'mongoose';
 import {
   AgentPackagesInquiry,
+  InsuranceRecommendationInput,
   PackageInput,
   PackagesInquiry,
-} from '../../libs/dto/package.input';
+} from '../../libs/dto/package/package.input';
 import {
   AllPackagesInquiry,
   PackageUpdate,
-} from '../../libs/dto/package.update';
-import { Package, Packages } from '../../libs/dto/package';
+} from '../../libs/dto/package/package.update';
+import { Package, Packages } from '../../libs/dto/package/package';
 import { Direction, Message } from '../../libs/enums/common.enum';
 import { PackageStatus } from '../../libs/enums/package.enum';
 import { ViewGroup } from '../../libs/enums/view.enum';
@@ -138,8 +139,8 @@ export class PackageService {
       [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC,
     };
 
-    if (input.search.packageCategory) {
-      match.packageCategory = input.search.packageCategory;
+    if (input.search.packageType) {
+      match.packageType = input.search.packageType;
     }
     if (input.search.text) {
       match.packageName = { $regex: new RegExp(input.search.text, 'i') };
@@ -151,7 +152,7 @@ export class PackageService {
       input.page,
       input.limit,
     );
-    await this.attachMemberData(result.list, memberId);
+    await this.populateMemberData(result.list);
     return result;
   }
 
@@ -166,8 +167,8 @@ export class PackageService {
     if (input.search.packageStatus) {
       match.packageStatus = input.search.packageStatus;
     }
-    if (input.search.packageCategory) {
-      match.packageCategory = input.search.packageCategory;
+    if (input.search.packageType) {
+      match.packageType = input.search.packageType;
     }
     if (input.search.text) {
       match.packageName = { $regex: new RegExp(input.search.text, 'i') };
@@ -210,6 +211,42 @@ export class PackageService {
     return result;
   }
 
+  public async getRecommendationCandidates(
+    input: InsuranceRecommendationInput,
+  ): Promise<Package[]> {
+    const match = this.buildRecommendationMatch(input);
+
+    return await this.packageModel
+      .find(match)
+      .sort({
+        packageRank: Direction.DESC,
+        packageViews: Direction.DESC,
+        createdAt: Direction.DESC,
+      })
+      .limit(15)
+      .lean()
+      .exec();
+  }
+
+  public async populateMemberData(packages: Package[]): Promise<Package[]> {
+    await Promise.all(
+      packages.map(async (targetPackage) => {
+        if (!targetPackage.memberId) return;
+
+        try {
+          targetPackage.memberData = await this.memberService.getMember(
+            null as any,
+            targetPackage.memberId,
+          );
+        } catch (error) {
+          targetPackage.memberData = undefined;
+        }
+      }),
+    );
+
+    return packages;
+  }
+
   private async findPackages(
     match: T,
     sort: T,
@@ -234,21 +271,46 @@ export class PackageService {
     return result[0] as Packages;
   }
 
-  private async attachMemberData(
-    packages: Package[],
-    memberId: ObjectId,
-  ): Promise<void> {
-    await Promise.all(
-      packages.map(async (targetPackage) => {
-        if (!targetPackage.memberId) {
-          return;
-        }
+  private buildRecommendationMatch(input: InsuranceRecommendationInput): T {
+    const clauses: T[] = [
+      { packageStatus: PackageStatus.ACTIVE },
+      { packageType: { $in: input.types } },
+    ];
 
-        targetPackage.memberData = await this.memberService.getMember(
-          null as any,
-          targetPackage.memberId,
-        );
-      }),
-    );
+    if (input.age !== undefined) {
+      clauses.push({
+        $or: [
+          { packageMinAge: { $exists: false } },
+          { packageMinAge: null },
+          { packageMinAge: { $lte: input.age } },
+        ],
+      });
+      clauses.push({
+        $or: [
+          { packageMaxAge: { $exists: false } },
+          { packageMaxAge: null },
+          { packageMaxAge: { $gte: input.age } },
+        ],
+      });
+    }
+
+    if (input.budget !== undefined) {
+      clauses.push({
+        packagePrice: { $lte: input.budget },
+      });
+    }
+
+    if (input.text) {
+      const textRegex = new RegExp(input.text, 'i');
+      clauses.push({
+        $or: [
+          { packageName: { $regex: textRegex } },
+          { packageDesc: { $regex: textRegex } },
+          { packageAssetTags: { $elemMatch: { $regex: textRegex } } },
+        ],
+      });
+    }
+
+    return clauses.length === 1 ? clauses[0] : { $and: clauses };
   }
 }

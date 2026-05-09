@@ -1,15 +1,15 @@
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { ObjectId } from 'mongoose';
-import { PackageCategory, PackageStatus } from '../enums/package.enum';
-import { Member } from './member';
+import { InsuranceType, PackageStatus } from '../../enums/package.enum';
+import { Member } from '../member/member';
 
 @ObjectType()
 export class Package {
   @Field(() => String)
   _id: ObjectId;
 
-  @Field(() => PackageCategory)
-  packageCategory: PackageCategory;
+  @Field(() => InsuranceType)
+  packageType: InsuranceType;
 
   @Field(() => PackageStatus)
   packageStatus: PackageStatus;
@@ -63,8 +63,8 @@ export class Package {
   updatedAt!: Date;
 }
 
-@ObjectType()
-export class TotalCounter {
+@ObjectType('PackageTotalCounter')
+export class PackageTotalCounter {
   @Field(() => Int, { nullable: true })
   total?: number;
 }
@@ -74,6 +74,21 @@ export class Packages {
   @Field(() => [Package])
   list: Package[];
 
-  @Field(() => [TotalCounter], { nullable: true })
-  metaCounter?: TotalCounter[];
+  @Field(() => [PackageTotalCounter], { nullable: true })
+  metaCounter?: PackageTotalCounter[];
+}
+
+@ObjectType()
+export class InsuranceRecommendationResult {
+  @Field(() => Int)
+  riskScore: number;
+
+  @Field(() => String)
+  reason: string;
+
+  @Field(() => [Package])
+  recommendedPackages: Package[];
+
+  @Field(() => [String], { nullable: true })
+  rawFactors?: string[];
 }

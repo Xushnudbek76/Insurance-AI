@@ -1,11 +1,11 @@
 import { Schema } from 'mongoose';
-import { PackageCategory, PackageStatus } from '../libs/enums/package.enum';
+import { InsuranceType, PackageStatus } from '../libs/enums/package.enum';
 
 const PackageSchema = new Schema(
   {
-    packageCategory: {
+    packageType: {
       type: String,
-      enum: PackageCategory,
+      enum: InsuranceType,
       required: true,
     },
     packageStatus: {

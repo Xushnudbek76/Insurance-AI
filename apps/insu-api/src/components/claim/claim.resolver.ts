@@ -4,7 +4,10 @@ import { UseGuards } from '@nestjs/common';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { AuthMember } from '../auth/decorators/authMember.decorator';
 import { Claim } from '../../libs/dto/claim/claim';
-import { SubmitClaimInput } from '../../libs/dto/claim/claim.input';
+import {
+  SubmitClaimInput,
+  UpdateClaimStatusInput,
+} from '../../libs/dto/claim/claim.input';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { MemberType } from '../../libs/enums/member.enum';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -37,5 +40,14 @@ export class ClaimResolver {
     @AuthMember('_id') agentId: string,
   ): Promise<Claim[]> {
     return this.claimService.getClaimsByAgentId(agentId);
+  }
+
+  @Roles(MemberType.AGENT)
+  @UseGuards(RolesGuard)
+  @Mutation(() => Claim)
+  public async updateClaimStatus(
+    @Args('input') input: UpdateClaimStatusInput,
+  ): Promise<Claim> {
+    return this.claimService.updateClaimStatus(input.claimId, input.newStatus);
   }
 }

@@ -108,4 +108,19 @@ export class ClaimService {
       .lean()
       .exec();
   }
+
+  public async updateClaimStatus(
+    claimId: string,
+    newStatus: ClaimStatus,
+  ): Promise<Claim> {
+    const result = await this.claimModel.findByIdAndUpdate(
+      claimId,
+      { claimStatus: newStatus },
+      { new: true },
+    );
+    if (!result) {
+      throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+    }
+    return result;
+  }
 }

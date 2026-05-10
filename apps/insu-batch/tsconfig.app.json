@@ -4,6 +4,6 @@
     "declaration": false,
     "outDir": "../../dist/apps/insu-batch"
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "../../apps/insu-api/src/**/*"],
   "exclude": ["node_modules", "dist", "test", "**/*spec.ts"]
 }

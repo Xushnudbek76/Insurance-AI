@@ -8,12 +8,12 @@ import { SubmitClaimInput } from '../../libs/dto/claim/claim.input';
 import { PolicyService } from '../policy/policy.service';
 import { shapeIntoMongoObjectId } from '../../libs/config';
 import { ClaimStatus } from '../../libs/enums/claim.enum';
-
+import { OpenRouterService } from '../ai/openrouter.service';
 @Injectable()
 export class ClaimService {
   constructor(
     @InjectModel('Claim') private readonly claimModel: Model<Claim>,
-    private readonly AiService: AiModule,
+    private readonly OpenRouterService: OpenRouterService,
     private readonly policyService: PolicyService,
   ) {}
 
@@ -32,7 +32,7 @@ export class ClaimService {
       throw new Error('Policy not found');
     }
 
-    const aiAnalysis = await this.AiService.analyzeClaim({
+    const aiAnalysis = await this.OpenRouterService.analyzeClaim({
       claimTitle: input.claimTitle,
       claimDesc: input.claimDesc,
       claimAmount: input.claimAmount,

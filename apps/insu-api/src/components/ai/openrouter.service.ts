@@ -10,18 +10,72 @@ export interface OpenRouterRankingResult {
   topPackageIds: string[];
   packageReasons: string[];
 }
-
+const apiKey = process.env.OPENROUTER_API_KEY;
+const model = process.env.OPENROUTER_MODEL;
 @Injectable()
 export class OpenRouterService {
   constructor(private readonly httpService: HttpService) {}
+
+  public async analyzeClaim(input: {
+    claimTitle: string;
+    claimDesc: string;
+    claimAmount: number;
+    policyStartDate: Date;
+    policyEndDate: Date;
+  }): Promise<string> {
+    if (!apiKey || !model) {
+      return 'AI analysis unavailable';
+    }
+
+    try {
+      const response = await lastValueFrom(
+        this.httpService.post(
+          'https://openrouter.ai/api/v1/chat/completions',
+          {
+            model,
+            temperature: 0.2,
+            max_tokens: 220,
+            messages: [
+              {
+                role: 'system',
+                content:
+                  'Analyze insurance claim. Check validity, policy period fit, inconsistencies, red flags. Return concise Uzbek (Latin), plain text only.',
+              },
+              {
+                role: 'user',
+                content: JSON.stringify(input),
+              },
+            ],
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${apiKey}`,
+              'Content-Type': 'application/json',
+            },
+            timeout: 15000,
+          },
+        ),
+      );
+
+      const content =
+        response.data?.choices?.[0]?.message?.content ??
+        response.data?.choices?.[0]?.text;
+
+      if (typeof content !== 'string' || !content.trim()) {
+        return 'AI analysis unavailable';
+      }
+
+      return content.trim();
+    } catch (error) {
+      console.log('OpenRouter analysis failed:', error);
+      return 'AI analysis failed';
+    }
+  }
 
   public async rankPackages(
     input: InsuranceRecommendationInput,
     candidates: Package[],
   ): Promise<OpenRouterRankingResult | null> {
-    const apiKey = process.env.OPENROUTER_API_KEY;
-    const model = process.env.OPENROUTER_MODEL;
-
     if (!apiKey || !model) {
       return null;
     }

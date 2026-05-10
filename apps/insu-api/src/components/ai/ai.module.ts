@@ -9,5 +9,6 @@ import { AuthModule } from '../auth/auth.module';
 @Module({
   imports: [HttpModule, AuthModule, InsuranceModule],
   providers: [AiResolver, OpenRouterService, RecommendationService],
+  exports: [OpenRouterService, RecommendationService],
 })
 export class AiModule {}

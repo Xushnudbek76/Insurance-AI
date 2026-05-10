@@ -1,4 +1,4 @@
-import { Args, Mutation, Resolver } from '@nestjs/graphql';
+import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { ClaimService } from './claim.service';
 import { UseGuards } from '@nestjs/common';
 import { AuthGuard } from '../auth/guards/auth.guard';
@@ -17,5 +17,13 @@ export class ClaimResolver {
     @Args('input') input: SubmitClaimInput,
   ): Promise<Claim> {
     return this.claimService.submitClaim(memberId, input);
+  }
+
+  @UseGuards(AuthGuard)
+  @Query(() => [Claim])
+  public async getMyClaims(
+    @AuthMember('_id') memberId: string,
+  ): Promise<Claim[]> {
+    return this.claimService.getMyClaims(memberId);
   }
 }

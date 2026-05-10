@@ -90,4 +90,13 @@ export class ClaimService {
     });
     return claim;
   }
+
+  public async getMyClaims(memberId: string): Promise<Claim[]> {
+    const memberIdObj = shapeIntoMongoObjectId(memberId);
+    return await this.claimModel
+      .find({ memberId: memberIdObj }, '-aiAnalysis')
+      .sort({ createdAt: -1 })
+      .lean()
+      .exec();
+  }
 }

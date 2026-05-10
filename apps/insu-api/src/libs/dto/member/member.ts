@@ -6,6 +6,7 @@ import {
   MemberType,
 } from '../../enums/member.enum';
 import { MeFollowed } from '../follow/follow';
+import { MeLiked } from '../like/like';
 
 @ObjectType()
 export class Member {
@@ -82,6 +83,9 @@ export class Member {
 
   @Field(() => Date)
   updatedAt!: Date;
+
+  @Field(() => [MeLiked], { nullable: true })
+  meLiked?: MeLiked[];
 
   @Field(() => [MeFollowed], { nullable: true })
   meFollowed?: MeFollowed[];

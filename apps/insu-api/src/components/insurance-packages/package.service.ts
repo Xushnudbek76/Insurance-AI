@@ -25,7 +25,7 @@ import { ViewService } from '../view/view.service';
 import { LikeService } from '../like/like.service';
 import { LikeInput } from '../../libs/dto/like/like.input';
 import { LikeGroup } from '../../libs/enums/like.enum';
-import { lookupAuthMemberLiked, lookupMember } from '../../libs/config';
+import { lookupAuthMemberLiked, lookupMember, shapeIntoMongoObjectId } from '../../libs/config';
 
 @Injectable()
 export class PackageService {
@@ -81,6 +81,8 @@ export class PackageService {
           .exec();
         targetPackage.packageViews = (targetPackage.packageViews ?? 0) + 1;
       }
+      const likeInput = { memberId, likeRefId: packageId, likeGroup: LikeGroup.PACKAGE };
+      targetPackage.meLiked = (await this.likeService.checkLikeExistence(likeInput)) as any;
     }
 
     if (targetPackage.memberId) {

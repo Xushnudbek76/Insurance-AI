@@ -23,6 +23,7 @@ import { Follower, Following, MeFollowed } from '../../libs/dto/follow/follow';
 import { LikeService } from '../like/like.service';
 import { LikeInput } from '../../libs/dto/like/like.input';
 import { LikeGroup } from '../../libs/enums/like.enum';
+import { lookupAuthMemberLiked } from '../../libs/config';
 
 @Injectable()
 export class MemberService {
@@ -121,10 +122,9 @@ export class MemberService {
           .exec();
         targetMember.memberViews!++;
       }
-      targetMember.meFollowed = await this.checkSubscription(
-        memberId,
-        targetId,
-      );
+      const likeInput = { memberId, likeRefId: targetId, likeGroup: LikeGroup.MEMBER };
+      targetMember.meLiked = (await this.likeService.checkLikeExistence(likeInput)) as any;
+      targetMember.meFollowed = await this.checkSubscription(memberId, targetId);
     }
     return targetMember;
   }
@@ -152,6 +152,7 @@ export class MemberService {
           list: [
             { $skip: (input.page - 1) * input.limit },
             { $limit: input.limit },
+            lookupAuthMemberLiked(memberId),
           ],
           metaCounter: [{ $count: 'total' }],
         },
@@ -180,6 +181,7 @@ export class MemberService {
           list: [
             { $skip: (input.page - 1) * input.limit },
             { $limit: input.limit },
+            lookupAuthMemberLiked(null),
           ],
           metaCounter: [{ $count: 'total' }],
         },

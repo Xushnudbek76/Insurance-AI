@@ -3,8 +3,10 @@ import { ClaimService } from './claim.service';
 import { UseGuards } from '@nestjs/common';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { AuthMember } from '../auth/decorators/authMember.decorator';
-import { Claim } from '../../libs/dto/claim/claim';
+import { Claim, Claims } from '../../libs/dto/claim/claim';
 import {
+  AgentClaimsInquiry,
+  AllClaimsInquiry,
   SubmitClaimInput,
   UpdateClaimStatusInput,
 } from '../../libs/dto/claim/claim.input';
@@ -35,11 +37,12 @@ export class ClaimResolver {
 
   @Roles(MemberType.AGENT)
   @UseGuards(RolesGuard)
-  @Query(() => [Claim])
+  @Query(() => Claims)
   public async getClaimsByAgent(
     @AuthMember('_id') agentId: string,
-  ): Promise<Claim[]> {
-    return this.claimService.getClaimsByAgentId(agentId);
+    @Args('input') input: AgentClaimsInquiry,
+  ): Promise<Claims> {
+    return this.claimService.getClaimsByAgentId(agentId, input);
   }
 
   @Roles(MemberType.AGENT)
@@ -49,5 +52,14 @@ export class ClaimResolver {
     @Args('input') input: UpdateClaimStatusInput,
   ): Promise<Claim> {
     return this.claimService.updateClaimStatus(input.claimId, input.newStatus);
+  }
+
+  @Roles(MemberType.ADMIN)
+  @UseGuards(RolesGuard)
+  @Query(() => Claims)
+  public async getAllClaimsByAdmin(
+    @Args('input') input: AllClaimsInquiry,
+  ): Promise<Claims> {
+    return this.claimService.getAllClaimsByAdmin(input);
   }
 }

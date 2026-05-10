@@ -43,3 +43,18 @@ export class Claim {
   @Field(() => Date)
   updatedAt!: Date;
 }
+
+@ObjectType('ClaimTotalCounter')
+export class ClaimTotalCounter {
+  @Field(() => Int, { nullable: true })
+  total?: number;
+}
+
+@ObjectType()
+export class Claims {
+  @Field(() => [Claim])
+  list: Claim[];
+
+  @Field(() => [ClaimTotalCounter], { nullable: true })
+  metaCounter?: ClaimTotalCounter[];
+}

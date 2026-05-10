@@ -11,7 +11,13 @@ import { PolicyService } from '../policy/policy.service';
 import { shapeIntoMongoObjectId } from '../../libs/config';
 import { ClaimStatus } from '../../libs/enums/claim.enum';
 import { PolicyStatus } from '../../libs/enums/policy.enum';
-import { Message } from '../../libs/enums/common.enum';
+import { Direction, Message } from '../../libs/enums/common.enum';
+import { T } from '../../libs/types/common';
+import {
+  AgentClaimsInquiry,
+  AllClaimsInquiry,
+} from '../../libs/dto/claim/claim.input';
+import { Claims } from '../../libs/dto/claim/claim';
 import { OpenRouterService } from '../ai/openrouter.service';
 @Injectable()
 export class ClaimService {
@@ -101,12 +107,61 @@ export class ClaimService {
       .exec();
   }
 
-  public async getClaimsByAgentId(agentId: string): Promise<Claim[]> {
-    return await this.claimModel
-      .find({ agentId })
-      .sort({ createdAt: -1 })
-      .lean()
+  public async getClaimsByAgentId(
+    agentId: string,
+    input: AgentClaimsInquiry,
+  ): Promise<Claims> {
+    const match: T = { agentId };
+    const sort: T = {
+      [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC,
+    };
+
+    if (input.search.claimStatus) {
+      match.claimStatus = input.search.claimStatus;
+    }
+    if (input.search.text) {
+      match.claimTitle = { $regex: new RegExp(input.search.text, 'i') };
+    }
+
+    return this.findClaims(match, sort, input.page, input.limit);
+  }
+
+  public async getAllClaimsByAdmin(input: AllClaimsInquiry): Promise<Claims> {
+    const match: T = {};
+    const sort: T = {
+      [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC,
+    };
+
+    if (input.search.claimStatus) {
+      match.claimStatus = input.search.claimStatus;
+    }
+    if (input.search.text) {
+      match.claimTitle = { $regex: new RegExp(input.search.text, 'i') };
+    }
+
+    return this.findClaims(match, sort, input.page, input.limit);
+  }
+
+  private async findClaims(
+    match: T,
+    sort: T,
+    page: number,
+    limit: number,
+  ): Promise<Claims> {
+    const result = await this.claimModel
+      .aggregate([
+        { $match: match },
+        { $sort: sort },
+        {
+          $facet: {
+            list: [{ $skip: (page - 1) * limit }, { $limit: limit }],
+            metaCounter: [{ $count: 'total' }],
+          },
+        },
+      ])
       .exec();
+
+    return result[0] as Claims;
   }
 
   public async updateClaimStatus(

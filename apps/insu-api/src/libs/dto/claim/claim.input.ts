@@ -2,6 +2,7 @@ import { Field, InputType, Int } from '@nestjs/graphql';
 import {
   IsArray,
   IsEnum,
+  IsIn,
   IsMongoId,
   IsNotEmpty,
   IsOptional,
@@ -9,6 +10,66 @@ import {
   Min,
 } from 'class-validator';
 import { ClaimStatus } from '../../enums/claim.enum';
+import { Direction } from '../../enums/common.enum';
+
+export const availableClaimSorts = ['createdAt', 'updatedAt', 'claimAmount'];
+
+@InputType()
+class ClaimSearch {
+  @IsOptional()
+  @IsEnum(ClaimStatus)
+  @Field(() => ClaimStatus, { nullable: true })
+  claimStatus?: ClaimStatus;
+
+  @IsOptional()
+  @IsString()
+  @Field(() => String, { nullable: true })
+  text?: string;
+}
+
+@InputType()
+export class AgentClaimsInquiry {
+  @Field(() => Int)
+  page: number;
+
+  @Field(() => Int)
+  limit: number;
+
+  @IsOptional()
+  @IsIn(availableClaimSorts)
+  @Field(() => String, { nullable: true })
+  sort?: string;
+
+  @IsOptional()
+  @IsEnum(Direction)
+  @Field(() => Direction, { nullable: true })
+  direction?: Direction;
+
+  @Field(() => ClaimSearch)
+  search: ClaimSearch;
+}
+
+@InputType()
+export class AllClaimsInquiry {
+  @Field(() => Int)
+  page: number;
+
+  @Field(() => Int)
+  limit: number;
+
+  @IsOptional()
+  @IsIn(availableClaimSorts)
+  @Field(() => String, { nullable: true })
+  sort?: string;
+
+  @IsOptional()
+  @IsEnum(Direction)
+  @Field(() => Direction, { nullable: true })
+  direction?: Direction;
+
+  @Field(() => ClaimSearch)
+  search: ClaimSearch;
+}
 
 @InputType()
 export class SubmitClaimInput {

@@ -22,6 +22,10 @@ import { ViewGroup } from '../../libs/enums/view.enum';
 import { StatisticModifier, T } from '../../libs/types/common';
 import { MemberService } from '../member/member.service';
 import { ViewService } from '../view/view.service';
+import { LikeService } from '../like/like.service';
+import { LikeInput } from '../../libs/dto/like/like.input';
+import { LikeGroup } from '../../libs/enums/like.enum';
+import { lookupAuthMemberLiked, lookupMember } from '../../libs/config';
 
 @Injectable()
 export class PackageService {
@@ -29,6 +33,7 @@ export class PackageService {
     @InjectModel('Package') private readonly packageModel: Model<Package>,
     private readonly memberService: MemberService,
     private readonly viewService: ViewService,
+    private readonly likeService: LikeService,
   ) {}
 
   public async createPackage(
@@ -80,7 +85,7 @@ export class PackageService {
 
     if (targetPackage.memberId) {
       targetPackage.memberData = await this.memberService.getMember(
-        null as any,
+        null,
         targetPackage.memberId,
       );
     }
@@ -125,7 +130,7 @@ export class PackageService {
       [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC,
     };
 
-    return this.findPackages(match, sort, input.page, input.limit);
+    return this.findPackages(memberId, match, sort, input.page, input.limit);
   }
 
   public async getPackages(
@@ -146,14 +151,7 @@ export class PackageService {
       match.packageName = { $regex: new RegExp(input.search.text, 'i') };
     }
 
-    const result = await this.findPackages(
-      match,
-      sort,
-      input.page,
-      input.limit,
-    );
-    await this.populateMemberData(result.list);
-    return result;
+    return this.findPackages(memberId, match, sort, input.page, input.limit);
   }
 
   public async getAllPackagesByAdmin(
@@ -174,7 +172,7 @@ export class PackageService {
       match.packageName = { $regex: new RegExp(input.search.text, 'i') };
     }
 
-    return this.findPackages(match, sort, input.page, input.limit);
+    return this.findPackages(null, match, sort, input.page, input.limit);
   }
 
   public async updatePackageByAdmin(input: PackageUpdate): Promise<Package> {
@@ -235,7 +233,7 @@ export class PackageService {
 
         try {
           targetPackage.memberData = await this.memberService.getMember(
-            null as any,
+            null,
             targetPackage.memberId,
           );
         } catch (error) {
@@ -248,6 +246,7 @@ export class PackageService {
   }
 
   private async findPackages(
+    memberId: ObjectId | null,
     match: T,
     sort: T,
     page: number,
@@ -258,7 +257,13 @@ export class PackageService {
       { $sort: sort },
       {
         $facet: {
-          list: [{ $skip: (page - 1) * limit }, { $limit: limit }],
+          list: [
+            { $skip: (page - 1) * limit },
+            { $limit: limit },
+            lookupAuthMemberLiked(memberId),
+            lookupMember,
+            { $unwind: '$memberData' },
+          ],
           metaCounter: [{ $count: 'total' }],
         },
       },
@@ -312,6 +317,29 @@ export class PackageService {
     }
 
     return clauses.length === 1 ? clauses[0] : { $and: clauses };
+  }
+
+  public async likeTargetPackage(
+    memberId: ObjectId,
+    likeRefId: ObjectId,
+  ): Promise<Package> {
+    const target = await this.packageModel
+      .findOne({ _id: likeRefId, packageStatus: PackageStatus.ACTIVE })
+      .exec();
+    if (!target) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+
+    const input: LikeInput = {
+      memberId,
+      likeRefId,
+      likeGroup: LikeGroup.PACKAGE,
+    };
+    const modifier = await this.likeService.toggleLike(input);
+    await this.packageStatsEditor({
+      _id: likeRefId,
+      targetKey: 'packageLikes',
+      modifier,
+    });
+    return this.getPackage(memberId, likeRefId);
   }
 
   public async packageStatsEditor(

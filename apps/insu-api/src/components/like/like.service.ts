@@ -7,68 +7,11 @@ import { LikeGroup } from '../../libs/enums/like.enum';
 import { Message } from '../../libs/enums/common.enum';
 import { T } from '../../libs/types/common';
 import { Package } from '../../libs/dto/package/package';
-import { MemberService } from '../member/member.service';
-import { PackageService } from '../insurance-packages/package.service';
-import { BoardArticleService } from '../board-article/board-article.service';
 import { lookupFavorite } from '../../libs/config';
 
 @Injectable()
 export class LikeService {
-  constructor(
-    @InjectModel('Like') private readonly likeModel: Model<any>,
-    private readonly memberService: MemberService,
-    private readonly packageService: PackageService,
-    private readonly boardArticleService: BoardArticleService,
-  ) {}
-
-  public async likeTargetPackage(
-    memberId: ObjectId,
-    likeRefId: ObjectId,
-  ): Promise<Package> {
-    const modifier = await this.toggleLike({
-      memberId,
-      likeRefId,
-      likeGroup: LikeGroup.PACKAGE,
-    });
-    await this.packageService.packageStatsEditor({
-      _id: likeRefId,
-      targetKey: 'packageLikes',
-      modifier,
-    });
-    return this.packageService.getPackage(memberId, likeRefId);
-  }
-
-  public async likeTargetBoardArticle(
-    memberId: ObjectId,
-    likeRefId: ObjectId,
-  ): Promise<void> {
-    const modifier = await this.toggleLike({
-      memberId,
-      likeRefId,
-      likeGroup: LikeGroup.ARTICLE,
-    });
-    await this.boardArticleService.boardArticleStatsEditor({
-      _id: likeRefId,
-      targetKey: 'articleLikes',
-      modifier,
-    });
-  }
-
-  public async likeTargetMember(
-    memberId: ObjectId,
-    likeRefId: ObjectId,
-  ): Promise<void> {
-    const modifier = await this.toggleLike({
-      memberId,
-      likeRefId,
-      likeGroup: LikeGroup.MEMBER,
-    });
-    await this.memberService.memberStatsEditor({
-      _id: likeRefId,
-      targetKey: 'memberLikes',
-      modifier,
-    });
-  }
+  constructor(@InjectModel('Like') private readonly likeModel: Model<any>) {}
 
   public async getFavoritePackages(memberId: ObjectId): Promise<Package[]> {
     const result = await this.likeModel.aggregate([
@@ -95,7 +38,7 @@ export class LikeService {
     return result ? [{ memberId, likeRefId, myFavorite: true }] : [];
   }
 
-  private async toggleLike(input: LikeInput): Promise<number> {
+  public async toggleLike(input: LikeInput): Promise<number> {
     const search: T = { memberId: input.memberId, likeRefId: input.likeRefId };
     const exist = await this.likeModel.findOne(search).exec();
     if (exist) {

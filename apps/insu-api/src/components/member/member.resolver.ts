@@ -138,6 +138,19 @@ export class MemberResolver {
   }
 
   @UseGuards(AuthGuard)
+  @Mutation(() => Member)
+  public async likeTargetMember(
+    @Args('memberId') targetMemberId: string,
+    @AuthMember('_id') memberId: ObjectId,
+  ): Promise<Member> {
+    console.log('Mutation: likeTargetMember');
+    return this.memberService.likeTargetMember(
+      memberId,
+      shapeIntoMongoObjectId(targetMemberId),
+    );
+  }
+
+  @UseGuards(AuthGuard)
   @Mutation((returns) => [String])
   public async imagesUploader(
     @Args('files', { type: () => [GraphQLUpload] })

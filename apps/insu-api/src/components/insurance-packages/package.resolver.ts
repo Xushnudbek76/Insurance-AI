@@ -120,6 +120,19 @@ export class PackageResolver {
     return this.packageService.updatePackageByAdmin(input);
   }
 
+  @UseGuards(AuthGuard)
+  @Mutation(() => Package)
+  public async likeTargetPackage(
+    @Args('packageId') packageId: string,
+    @AuthMember('_id') memberId: ObjectId,
+  ): Promise<Package> {
+    console.log('Mutation: likeTargetPackage');
+    return this.packageService.likeTargetPackage(
+      memberId,
+      shapeIntoMongoObjectId(packageId),
+    );
+  }
+
   @Roles(MemberType.ADMIN)
   @UseGuards(RolesGuard)
   @Mutation(() => Package)

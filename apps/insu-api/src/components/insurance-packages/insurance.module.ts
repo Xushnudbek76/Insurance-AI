@@ -7,6 +7,7 @@ import { PolicyModule } from '../policy/policy.module';
 import { ViewModule } from '../view/view.module';
 import { PackageResolver } from './package.resolver';
 import { PackageService } from './package.service';
+import { LikeModule } from '../like/like.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { PackageService } from './package.service';
     MemberModule,
     PolicyModule,
     ViewModule,
+    LikeModule,
   ],
   providers: [PackageResolver, PackageService],
   exports: [PackageService],

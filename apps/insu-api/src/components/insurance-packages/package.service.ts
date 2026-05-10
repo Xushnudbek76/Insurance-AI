@@ -19,7 +19,7 @@ import { Package, Packages } from '../../libs/dto/package/package';
 import { Direction, Message } from '../../libs/enums/common.enum';
 import { PackageStatus } from '../../libs/enums/package.enum';
 import { ViewGroup } from '../../libs/enums/view.enum';
-import { T } from '../../libs/types/common';
+import { StatisticModifier, T } from '../../libs/types/common';
 import { MemberService } from '../member/member.service';
 import { ViewService } from '../view/view.service';
 
@@ -312,5 +312,14 @@ export class PackageService {
     }
 
     return clauses.length === 1 ? clauses[0] : { $and: clauses };
+  }
+
+  public async packageStatsEditor(
+    input: StatisticModifier,
+  ): Promise<Package | null> {
+    const { _id, targetKey, modifier } = input;
+    return await this.packageModel
+      .findOneAndUpdate(_id, { $inc: { [targetKey]: modifier } }, { new: true })
+      .exec();
   }
 }

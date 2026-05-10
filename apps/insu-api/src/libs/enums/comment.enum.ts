@@ -1,6 +1,7 @@
 export enum CommentGroup {
   ARTICLE = 'ARTICLE',
   NOTICE = 'NOTICE',
+  PACKAGE = 'PACKAGE',
 }
 
 export enum CommentStatus {

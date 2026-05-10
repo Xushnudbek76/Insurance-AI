@@ -4,8 +4,9 @@ import { MemberModule } from './member/member.module';
 import { InsuranceModule } from './insurance-packages/insurance.module';
 import { PolicyModule } from './policy/policy.module';
 import { ClaimModule } from './claim/claim.module';
+import { CommentModule } from './comment/comment.module';
 
 @Module({
-  imports: [MemberModule, InsuranceModule, AiModule, PolicyModule, ClaimModule],
+  imports: [MemberModule, InsuranceModule, AiModule, PolicyModule, ClaimModule, CommentModule],
 })
 export class ComponentsModule {}

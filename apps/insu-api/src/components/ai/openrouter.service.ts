@@ -10,8 +10,7 @@ export interface OpenRouterRankingResult {
   topPackageIds: string[];
   packageReasons: string[];
 }
-const apiKey = process.env.OPENROUTER_API_KEY;
-const model = process.env.OPENROUTER_MODEL;
+
 @Injectable()
 export class OpenRouterService {
   constructor(private readonly httpService: HttpService) {}
@@ -23,6 +22,8 @@ export class OpenRouterService {
     policyStartDate: Date;
     policyEndDate: Date;
   }): Promise<string> {
+    const apiKey = process.env.OPENROUTER_API_KEY;
+    const model = process.env.OPENROUTER_MODEL;
     if (!apiKey || !model) {
       return 'AI analysis unavailable';
     }
@@ -33,13 +34,11 @@ export class OpenRouterService {
           'https://openrouter.ai/api/v1/chat/completions',
           {
             model,
-            temperature: 0.2,
-            max_tokens: 220,
             messages: [
               {
                 role: 'system',
                 content:
-                  'Analyze insurance claim. Check validity, policy period fit, inconsistencies, red flags. Return concise Uzbek (Latin), plain text only.',
+                  'Evaluate if this claim should be approved. Give a brief recommendation and short advice for the admin.and add joke, plain text only, keep it short.',
               },
               {
                 role: 'user',
@@ -52,7 +51,6 @@ export class OpenRouterService {
               Authorization: `Bearer ${apiKey}`,
               'Content-Type': 'application/json',
             },
-            timeout: 15000,
           },
         ),
       );
@@ -76,6 +74,8 @@ export class OpenRouterService {
     input: InsuranceRecommendationInput,
     candidates: Package[],
   ): Promise<OpenRouterRankingResult | null> {
+    const apiKey = process.env.OPENROUTER_API_KEY;
+    const model = process.env.OPENROUTER_MODEL;
     if (!apiKey || !model) {
       return null;
     }

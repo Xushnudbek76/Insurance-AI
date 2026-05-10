@@ -22,6 +22,9 @@ export class Claim {
   @Field(() => String)
   claimDesc: string;
 
+  @Field(() => String)
+  agentId: string;
+
   @Field(() => Int)
   claimAmount: number;
 

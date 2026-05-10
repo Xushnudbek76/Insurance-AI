@@ -25,6 +25,9 @@ export class Policy {
   @Field(() => Int)
   premiumAmount: number;
 
+  @Field(() => String)
+  AgentId: string;
+
   @Field(() => Date)
   startDate: Date;
 

@@ -81,6 +81,7 @@ export class ClaimService {
     const claim = await this.claimModel.create({
       memberId: memberIdObj,
       policyId: id,
+      agentId: policy.AgentId,
       claimTitle: input.claimTitle,
       claimDesc: input.claimDesc,
       claimStatus: ClaimStatus.PENDING,
@@ -95,6 +96,14 @@ export class ClaimService {
     const memberIdObj = shapeIntoMongoObjectId(memberId);
     return await this.claimModel
       .find({ memberId: memberIdObj }, '-aiAnalysis')
+      .sort({ createdAt: -1 })
+      .lean()
+      .exec();
+  }
+
+  public async getClaimsByAgentId(agentId: string): Promise<Claim[]> {
+    return await this.claimModel
+      .find({ agentId })
       .sort({ createdAt: -1 })
       .lean()
       .exec();

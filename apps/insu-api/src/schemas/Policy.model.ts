@@ -18,6 +18,10 @@ const PolicySchema = new Schema(
       ref: 'Package',
       required: true,
     },
+    AgentId: {
+      type: String,
+      required: true,
+    },
     memberNick: {
       type: String,
       required: true,

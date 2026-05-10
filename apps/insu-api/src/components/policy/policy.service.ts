@@ -65,6 +65,7 @@ export class PolicyService {
       memberNick,
       packageName: targetPackage.packageName,
       premiumAmount: targetPackage.packagePrice,
+      AgentId: `${targetPackage.memberId}`,
       startDate,
       endDate,
       policyStatus: PolicyStatus.ACTIVE,

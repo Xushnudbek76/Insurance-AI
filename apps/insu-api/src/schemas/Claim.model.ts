@@ -18,6 +18,10 @@ const ClaimSchema = new Schema(
       ref: 'Policy',
       required: true,
     },
+    agentId: {
+      type: String,
+      required: true,
+    },
     claimTitle: {
       type: String,
       required: true,

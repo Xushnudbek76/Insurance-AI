@@ -5,6 +5,9 @@ import { AuthGuard } from '../auth/guards/auth.guard';
 import { AuthMember } from '../auth/decorators/authMember.decorator';
 import { Claim } from '../../libs/dto/claim/claim';
 import { SubmitClaimInput } from '../../libs/dto/claim/claim.input';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { MemberType } from '../../libs/enums/member.enum';
+import { RolesGuard } from '../auth/guards/roles.guard';
 
 @Resolver()
 export class ClaimResolver {
@@ -25,5 +28,14 @@ export class ClaimResolver {
     @AuthMember('_id') memberId: string,
   ): Promise<Claim[]> {
     return this.claimService.getMyClaims(memberId);
+  }
+
+  @Roles(MemberType.AGENT)
+  @UseGuards(RolesGuard)
+  @Query(() => [Claim])
+  public async getClaimsByAgent(
+    @AuthMember('_id') agentId: string,
+  ): Promise<Claim[]> {
+    return this.claimService.getClaimsByAgentId(agentId);
   }
 }

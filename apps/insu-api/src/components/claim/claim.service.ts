@@ -1,19 +1,24 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Claim } from '../../libs/dto/claim/claim';
 import { Model } from 'mongoose';
-import { AiModule } from '../ai/ai.module';
-import { PolicyModule } from '../policy/policy.module';
 import { SubmitClaimInput } from '../../libs/dto/claim/claim.input';
 import { PolicyService } from '../policy/policy.service';
 import { shapeIntoMongoObjectId } from '../../libs/config';
 import { ClaimStatus } from '../../libs/enums/claim.enum';
+import { PolicyStatus } from '../../libs/enums/policy.enum';
+import { Message } from '../../libs/enums/common.enum';
 import { OpenRouterService } from '../ai/openrouter.service';
 @Injectable()
 export class ClaimService {
   constructor(
     @InjectModel('Claim') private readonly claimModel: Model<Claim>,
-    private readonly OpenRouterService: OpenRouterService,
+    @InjectModel('Package') private readonly packageModel: Model<any>,
+    private readonly openRouterService: OpenRouterService,
     private readonly policyService: PolicyService,
   ) {}
 
@@ -29,10 +34,43 @@ export class ClaimService {
       null as any,
     );
     if (!policy) {
-      throw new Error('Policy not found');
+      throw new InternalServerErrorException(Message.NO_DATA_FOUND);
     }
 
-    const aiAnalysis = await this.OpenRouterService.analyzeClaim({
+    if (policy.policyStatus !== PolicyStatus.ACTIVE) {
+      throw new BadRequestException('Only active policies can submit claims');
+    }
+
+    const existingClaim = await this.claimModel
+      .findOne({
+        memberId: memberIdObj,
+        policyId: id,
+        claimStatus: ClaimStatus.PENDING,
+      })
+      .lean()
+      .exec();
+
+    if (existingClaim) {
+      throw new BadRequestException(
+        'Pending claim already exists for this policy',
+      );
+    }
+
+    const targetPackage = await this.packageModel
+      .findById(policy.packageId)
+      .lean()
+      .exec();
+
+    if (
+      targetPackage?.packageCoverageLimit &&
+      input.claimAmount > targetPackage.packageCoverageLimit
+    ) {
+      throw new BadRequestException(
+        `Claim amount exceeds coverage limit of ${targetPackage.packageCoverageLimit}`,
+      );
+    }
+
+    const aiAnalysis = await this.openRouterService.analyzeClaim({
       claimTitle: input.claimTitle,
       claimDesc: input.claimDesc,
       claimAmount: input.claimAmount,

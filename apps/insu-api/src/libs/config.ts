@@ -20,6 +20,8 @@ export const availableBoardArticleSorts = [
   'articleViews',
 ];
 
+export const availableCommentSorts = ['createdAt', 'updatedAt'];
+
 export const shapeIntoMongoObjectId = (target: any) => {
   return typeof target === 'string' ? new ObjectId(target) : target;
 };

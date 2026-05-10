@@ -17,7 +17,7 @@ import { Member, Members } from '../../libs/dto/member/member';
 import { ViewService } from '../view/view.service';
 import { AuthService } from '../auth/auth.service';
 import { ViewGroup } from '../../libs/enums/view.enum';
-import { T } from '../../libs/types/common';
+import { StatisticModifier, T } from '../../libs/types/common';
 import { MemberUpdate } from '../../libs/dto/member/member.update';
 
 @Injectable()
@@ -185,5 +185,14 @@ export class MemberService {
     if (!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);
 
     return result;
+  }
+  public async memberStatsEditor(
+    input: StatisticModifier,
+  ): Promise<Member | null> {
+    console.log('executed');
+    const { _id, targetKey, modifier } = input;
+    return await this.memberModel
+      .findOneAndUpdate(_id, { $inc: { [targetKey]: modifier } }, { new: true })
+      .exec();
   }
 }

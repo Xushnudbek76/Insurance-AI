@@ -19,11 +19,15 @@ import { AuthService } from '../auth/auth.service';
 import { ViewGroup } from '../../libs/enums/view.enum';
 import { StatisticModifier, T } from '../../libs/types/common';
 import { MemberUpdate } from '../../libs/dto/member/member.update';
+import { Follower, Following, MeFollowed } from '../../libs/dto/follow/follow';
 
 @Injectable()
 export class MemberService {
   constructor(
     @InjectModel('Member') private readonly memberModel: Model<Member>,
+    @InjectModel('Follow')
+    private readonly followModel: Model<Follower | Following>,
+
     private authService: AuthService,
     private viewService: ViewService,
   ) {}
@@ -83,7 +87,7 @@ export class MemberService {
     return result;
   }
   public async getMember(
-    memberId: ObjectId,
+    memberId: ObjectId | null,
     targetId: ObjectId,
   ): Promise<Member> {
     const search: T = {
@@ -114,6 +118,10 @@ export class MemberService {
           .exec();
         targetMember.memberViews!++;
       }
+      targetMember.meFollowed = await this.checkSubscription(
+        memberId,
+        targetId,
+      );
     }
     return targetMember;
   }
@@ -194,5 +202,23 @@ export class MemberService {
     return await this.memberModel
       .findOneAndUpdate(_id, { $inc: { [targetKey]: modifier } }, { new: true })
       .exec();
+  }
+
+  private async checkSubscription(
+    followerId: ObjectId,
+    followingId: ObjectId,
+  ): Promise<MeFollowed[]> {
+    const result = await this.followModel
+      .findOne({ followingId: followingId, followerId: followerId })
+      .exec();
+    return result
+      ? [
+          {
+            followerId: followerId,
+            followingId: followingId,
+            myFollowing: true,
+          },
+        ]
+      : [];
   }
 }

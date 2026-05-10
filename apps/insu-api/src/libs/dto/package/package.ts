@@ -2,6 +2,7 @@ import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { ObjectId } from 'mongoose';
 import { InsuranceType, PackageStatus } from '../../enums/package.enum';
 import { Member } from '../member/member';
+import { MeLiked } from '../like/like';
 
 @ObjectType()
 export class Package {
@@ -55,6 +56,9 @@ export class Package {
 
   @Field(() => Member, { nullable: true })
   memberData?: Member;
+
+  @Field(() => [MeLiked], { nullable: true })
+  meLiked?: MeLiked[];
 
   @Field(() => Date)
   createdAt!: Date;

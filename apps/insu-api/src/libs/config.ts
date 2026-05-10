@@ -35,6 +35,26 @@ export const getSerialForImage = (filename: string) => {
   return uuidv4() + ext;
 };
 
+export const lookupFavorite = (memberId: object) => ({
+  $lookup: {
+    from: 'likes',
+    let: { localId: '$_id' },
+    pipeline: [
+      {
+        $match: {
+          $expr: {
+            $and: [
+              { $eq: ['$likeRefId', '$$localId'] },
+              { $eq: ['$memberId', memberId] },
+            ],
+          },
+        },
+      },
+    ],
+    as: 'meLiked',
+  },
+});
+
 export const lookupMember = {
   $lookup: {
     from: 'members',

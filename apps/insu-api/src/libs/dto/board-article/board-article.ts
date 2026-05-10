@@ -5,6 +5,7 @@ import {
 } from '../../enums/board-article.enum';
 import { ObjectId } from 'mongoose';
 import { Member, MemberTotalCounter } from '../member/member';
+import { MeLiked } from '../like/like';
 
 @ObjectType()
 export class BoardArticle {

@@ -14,7 +14,10 @@ import {
 import { Direction, Message } from '../../libs/enums/common.enum';
 import { CommentGroup, CommentStatus } from '../../libs/enums/comment.enum';
 import { CommentUpdate } from '../../libs/dto/comment/comment.update';
-import { Comments } from '../../libs/dto/comment/comment';
+import {
+  Comment as CommentDto,
+  Comments,
+} from '../../libs/dto/comment/comment';
 import { T } from '../../libs/types/common';
 import { lookupMember } from '../../libs/config';
 
@@ -29,7 +32,7 @@ export class CommentService {
   public async createComment(
     memberId: ObjectId,
     input: CommentInput,
-  ): Promise<Comment> {
+  ): Promise<CommentDto> {
     input.memberId = memberId;
 
     let result = null;
@@ -65,7 +68,7 @@ export class CommentService {
   public async updateComment(
     memberId: ObjectId,
     input: CommentUpdate,
-  ): Promise<Comment> {
+  ): Promise<CommentDto> {
     const { _id } = input;
     const result = await this.commentModel.findOneAndUpdate(
       {
@@ -118,7 +121,7 @@ export class CommentService {
     return result[0];
   }
 
-  public async removeCommentByAdmin(input: ObjectId): Promise<Comment> {
+  public async removeCommentByAdmin(input: ObjectId): Promise<CommentDto> {
     const result = await this.commentModel.findByIdAndDelete(input);
     if (!result) throw new InternalServerErrorException(Message.REMOVE_FAILED);
     return result;

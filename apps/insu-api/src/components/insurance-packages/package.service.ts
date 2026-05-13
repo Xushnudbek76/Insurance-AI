@@ -25,7 +25,11 @@ import { ViewService } from '../view/view.service';
 import { LikeService } from '../like/like.service';
 import { LikeInput } from '../../libs/dto/like/like.input';
 import { LikeGroup } from '../../libs/enums/like.enum';
-import { lookupAuthMemberLiked, lookupMember, shapeIntoMongoObjectId } from '../../libs/config';
+import {
+  lookupAuthMemberLiked,
+  lookupMember,
+  shapeIntoMongoObjectId,
+} from '../../libs/config';
 
 @Injectable()
 export class PackageService {
@@ -81,8 +85,13 @@ export class PackageService {
           .exec();
         targetPackage.packageViews = (targetPackage.packageViews ?? 0) + 1;
       }
-      const likeInput = { memberId, likeRefId: packageId, likeGroup: LikeGroup.PACKAGE };
-      targetPackage.meLiked = (await this.likeService.checkLikeExistence(likeInput)) as any;
+      const likeInput = {
+        memberId,
+        likeRefId: packageId,
+        likeGroup: LikeGroup.PACKAGE,
+      };
+      targetPackage.meLiked =
+        await this.likeService.checkLikeExistence(likeInput);
     }
 
     if (targetPackage.memberId) {
@@ -304,17 +313,6 @@ export class PackageService {
     if (input.budget !== undefined) {
       clauses.push({
         packagePrice: { $lte: input.budget },
-      });
-    }
-
-    if (input.text) {
-      const textRegex = new RegExp(input.text, 'i');
-      clauses.push({
-        $or: [
-          { packageName: { $regex: textRegex } },
-          { packageDesc: { $regex: textRegex } },
-          { packageAssetTags: { $elemMatch: { $regex: textRegex } } },
-        ],
       });
     }
 

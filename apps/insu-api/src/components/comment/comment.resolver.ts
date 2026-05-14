@@ -5,6 +5,7 @@ import { AuthGuard } from '../auth/guards/auth.guard';
 import {
   CommentInput,
   CommentsInquiry,
+  LatestCommentsInquiry,
 } from '../../libs/dto/comment/comment.input';
 import { AuthMember } from '../auth/decorators/authMember.decorator';
 import { ObjectId } from 'mongoose';
@@ -41,7 +42,7 @@ export class CommentResolver {
     console.log('Mutation: updateComment');
     input._id = shapeIntoMongoObjectId(input._id);
     const result = await this.commentService.updateComment(memberId, input);
-    return result as any;
+    return result;
   }
 
   @UseGuards(WithoutGuard)
@@ -58,6 +59,16 @@ export class CommentResolver {
     return result;
   }
 
+  @UseGuards(WithoutGuard)
+  @Query((returns) => Comments)
+  public async getLatestComments(
+    @Args('input') input: LatestCommentsInquiry,
+  ): Promise<Comments> {
+    console.log('Query: getLatestComments');
+    const result = await this.commentService.getLatestComments(input);
+    return result;
+  }
+
   @Roles(MemberType.ADMIN)
   @UseGuards(RolesGuard)
   @Mutation((returns) => CommentDto)
@@ -66,6 +77,6 @@ export class CommentResolver {
   ): Promise<CommentDto> {
     console.log('Mutation: removeCommentByAdmin');
     const commentId = shapeIntoMongoObjectId(input);
-    return (await this.commentService.removeCommentByAdmin(commentId)) as any;
+    return await this.commentService.removeCommentByAdmin(commentId);
   }
 }

@@ -95,10 +95,14 @@ export class PackageService {
     }
 
     if (targetPackage.memberId) {
-      targetPackage.memberData = await this.memberService.getMember(
-        null,
-        targetPackage.memberId,
-      );
+      try {
+        targetPackage.memberData = await this.memberService.getMember(
+          null,
+          targetPackage.memberId,
+        );
+      } catch (error) {
+        targetPackage.memberData = undefined;
+      }
     }
 
     return targetPackage;
@@ -161,6 +165,19 @@ export class PackageService {
     if (input.search.text) {
       match.packageName = { $regex: new RegExp(input.search.text, 'i') };
     }
+    if (input.search.priceMin != null || input.search.priceMax != null) {
+      match.packagePrice = {};
+
+      if (input.search.priceMin != null) {
+        match.packagePrice.$gte = input.search.priceMin;
+      }
+      if (input.search.priceMax != null) {
+        match.packagePrice.$lte = input.search.priceMax;
+      }
+    }
+    if (input.search.coverageMin != null) {
+      match.packageCoverageLimit = { $gte: input.search.coverageMin };
+    }
 
     return this.findPackages(memberId, match, sort, input.page, input.limit);
   }
@@ -181,6 +198,19 @@ export class PackageService {
     }
     if (input.search.text) {
       match.packageName = { $regex: new RegExp(input.search.text, 'i') };
+    }
+    if (input.search.priceMin != null || input.search.priceMax != null) {
+      match.packagePrice = {};
+
+      if (input.search.priceMin != null) {
+        match.packagePrice.$gte = input.search.priceMin;
+      }
+      if (input.search.priceMax != null) {
+        match.packagePrice.$lte = input.search.priceMax;
+      }
+    }
+    if (input.search.coverageMin != null) {
+      match.packageCoverageLimit = { $gte: input.search.coverageMin };
     }
 
     return this.findPackages(null, match, sort, input.page, input.limit);
@@ -273,7 +303,12 @@ export class PackageService {
             { $limit: limit },
             lookupAuthMemberLiked(memberId),
             lookupMember,
-            { $unwind: '$memberData' },
+            {
+              $unwind: {
+                path: '$memberData',
+                preserveNullAndEmptyArrays: true,
+              },
+            },
           ],
           metaCounter: [{ $count: 'total' }],
         },

@@ -100,7 +100,7 @@ Return strict JSON only:
 }
 
 Rules:
-- language: Uzbek (Latin)
+- language: English
 - riskScore: integer from 1 to 100
 - reason: 1 to 2 short user-friendly sentences
 - topPackageIds: only IDs from provided candidates, maximum 3

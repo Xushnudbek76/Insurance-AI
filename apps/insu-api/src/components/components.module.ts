@@ -6,8 +6,18 @@ import { PolicyModule } from './policy/policy.module';
 import { ClaimModule } from './claim/claim.module';
 import { CommentModule } from './comment/comment.module';
 import { LikeModule } from './like/like.module';
+import { BoardArticleModule } from './board-article/board-article.module';
 
 @Module({
-  imports: [MemberModule, InsuranceModule, AiModule, PolicyModule, ClaimModule, CommentModule, LikeModule],
+  imports: [
+    MemberModule,
+    InsuranceModule,
+    AiModule,
+    PolicyModule,
+    ClaimModule,
+    BoardArticleModule,
+    CommentModule,
+    LikeModule,
+  ],
 })
 export class ComponentsModule {}

@@ -80,6 +80,21 @@ class PackageSearch {
   @IsOptional()
   @Field(() => String, { nullable: true })
   text?: string;
+
+  @IsOptional()
+  @Min(0)
+  @Field(() => Int, { nullable: true })
+  priceMin?: number;
+
+  @IsOptional()
+  @Min(0)
+  @Field(() => Int, { nullable: true })
+  priceMax?: number;
+
+  @IsOptional()
+  @Min(0)
+  @Field(() => Int, { nullable: true })
+  coverageMin?: number;
 }
 
 @InputType()

@@ -19,7 +19,7 @@ import {
   Comments,
 } from '../../libs/dto/comment/comment';
 import { T } from '../../libs/types/common';
-import { lookupMember } from '../../libs/config';
+import { lookupMember, shapeIntoMongoObjectId } from '../../libs/config';
 
 @Injectable()
 export class CommentService {
@@ -34,7 +34,7 @@ export class CommentService {
     input: CommentInput,
   ): Promise<CommentDto> {
     input.memberId = memberId;
-
+    input.commentRefId = shapeIntoMongoObjectId(input.commentRefId);
     let result = null;
 
     try {
@@ -125,5 +125,36 @@ export class CommentService {
     const result = await this.commentModel.findByIdAndDelete(input);
     if (!result) throw new InternalServerErrorException(Message.REMOVE_FAILED);
     return result;
+  }
+
+  public async getLatestComments(input: any): Promise<Comments> {
+    const match: T = {
+      commentStatus: CommentStatus.ACTIVE,
+    };
+    const sort: T = {
+      [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC,
+    };
+
+    const result: Comments[] = await this.commentModel.aggregate([
+      { $match: match },
+      { $sort: sort },
+      {
+        $facet: {
+          list: [
+            { $skip: (input.page - 1) * input.limit },
+            { $limit: input.limit },
+
+            lookupMember,
+            { $unwind: '$memberData' },
+          ],
+          metaCounter: [{ $count: 'total' }],
+        },
+      },
+    ]);
+
+    if (!result.length)
+      throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+
+    return result[0];
   }
 }

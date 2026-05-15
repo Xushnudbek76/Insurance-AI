@@ -7,6 +7,8 @@ import { ClaimModule } from './claim/claim.module';
 import { CommentModule } from './comment/comment.module';
 import { LikeModule } from './like/like.module';
 import { BoardArticleModule } from './board-article/board-article.module';
+import { FollowModule } from './follow/follow.module';
+import { SocketModule } from './socket/socket.module';
 
 @Module({
   imports: [
@@ -18,6 +20,8 @@ import { BoardArticleModule } from './board-article/board-article.module';
     BoardArticleModule,
     CommentModule,
     LikeModule,
+    FollowModule,
+    SocketModule,
   ],
 })
 export class ComponentsModule {}

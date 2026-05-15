@@ -23,6 +23,6 @@ const ViewSchema = new Schema(
   { timestamps: true, collection: 'views' },
 );
 
-ViewSchema.index({ memberId: 1, viewRefId: 1 }, { unique: true });
+ViewSchema.index({ memberId: 1, viewRefId: 1, viewGroup: 1 }, { unique: true });
 
 export default ViewSchema;

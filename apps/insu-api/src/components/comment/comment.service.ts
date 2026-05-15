@@ -20,6 +20,7 @@ import {
 } from '../../libs/dto/comment/comment';
 import { T } from '../../libs/types/common';
 import { lookupMember, shapeIntoMongoObjectId } from '../../libs/config';
+import { BoardArticleService } from '../board-article/board-article.service';
 
 @Injectable()
 export class CommentService {
@@ -27,6 +28,7 @@ export class CommentService {
     @InjectModel('Comment') private readonly commentModel: Model<any>,
     private readonly memberService: MemberService,
     private readonly packageService: PackageService,
+    private readonly boardArticleService: BoardArticleService,
   ) {}
 
   public async createComment(
@@ -45,10 +47,17 @@ export class CommentService {
     }
 
     switch (input.commentGroup) {
-      case CommentGroup.ARTICLE:
+      case CommentGroup.MEMBER:
         await this.memberService.memberStatsEditor({
           _id: input.commentRefId,
-          targetKey: 'memberArticles',
+          targetKey: 'memberComments',
+          modifier: 1,
+        });
+        break;
+      case CommentGroup.ARTICLE:
+        await this.boardArticleService.boardArticleStatsEditor({
+          _id: input.commentRefId,
+          targetKey: 'articleComments',
           modifier: 1,
         });
         break;

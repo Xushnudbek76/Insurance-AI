@@ -16,17 +16,33 @@ import { T } from './libs/types/common';
       playground: true,
       uploads: false,
       autoSchemaFile: true,
-      formatError: (error: T) => {
-        console.log('error:', error);
+      formatError: (error) => {
+        const originalError = error?.extensions?.originalError;
+
         const graphQLformattedError = {
-          code: error?.extensions.code,
+          code: error?.extensions?.code || 'INTERNAL_SERVER_ERROR',
+
           message:
+            originalError?.message ||
             error?.extensions?.exception?.response?.message ||
             error?.extensions?.response?.message ||
             error?.message ||
             'Unknown Error',
         };
-        console.log('GRAPHQL GLOBAL ERR:', graphQLformattedError);
+
+        console.log(
+          'GRAPHQL FULL ERR:',
+          JSON.stringify(
+            {
+              code: graphQLformattedError.code,
+              message: graphQLformattedError.message,
+              originalError,
+            },
+            null,
+            2,
+          ),
+        );
+
         return graphQLformattedError;
       },
     }),

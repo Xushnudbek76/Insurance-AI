@@ -70,6 +70,10 @@ export class PackageInput {
 @InputType()
 class PackageSearch {
   @IsOptional()
+  @Field(() => String, { nullable: true })
+  memberId?: string;
+
+  @IsOptional()
   @Field(() => InsuranceType, { nullable: true })
   packageType?: InsuranceType;
 

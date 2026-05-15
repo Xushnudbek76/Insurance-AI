@@ -85,9 +85,9 @@ export class BoardArticleService {
       /** @ts-expect-error */
       const newView = await this.viewService.recordView(viewInput);
       if (newView) {
-        await this.memberService.memberStatsEditor({
-          _id: targetBoardArticle.memberId,
-          targetKey: 'memberArticles',
+        await this.boardArticleStatsEditor({
+          _id: shapeIntoMongoObjectId(articleId),
+          targetKey: 'articleViews',
           modifier: 1,
         });
         targetBoardArticle.articleViews++;
@@ -99,6 +99,13 @@ export class BoardArticleService {
       };
       targetBoardArticle.meLiked =
         await this.likeService.checkLikeExistence(likeInput);
+    } else {
+      await this.boardArticleStatsEditor({
+        _id: shapeIntoMongoObjectId(articleId),
+        targetKey: 'articleViews',
+        modifier: 1,
+      });
+      targetBoardArticle.articleViews++;
     }
     targetBoardArticle.memberData = await this.memberService.getMember(
       memberId,
@@ -258,7 +265,7 @@ export class BoardArticleService {
   ): Promise<BoardArticle | null> {
     const { _id, targetKey, modifier } = input;
     return await this.boardArticleModel
-      .findOneAndUpdate(_id, { $inc: { [targetKey]: modifier } }, { new: true })
+      .findOneAndUpdate({ _id }, { $inc: { [targetKey]: modifier } }, { new: true })
       .exec();
   }
 

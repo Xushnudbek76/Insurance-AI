@@ -192,12 +192,12 @@ export class MemberService {
     return result[0];
   }
   public async updateMemberByAdmin(input: MemberUpdate): Promise<Member> {
-    const result: Member | null = await this.memberModel
-      .findOneAndUpdate({ _id: input._id }, input, { new: true })
+    const result = await this.memberModel
+      .findByIdAndUpdate(input._id, input, { new: true })
       .exec();
     if (!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);
 
-    return result;
+    return result as Member;
   }
   public async memberStatsEditor(
     input: StatisticModifier,
@@ -205,7 +205,7 @@ export class MemberService {
     console.log('executed');
     const { _id, targetKey, modifier } = input;
     return await this.memberModel
-      .findOneAndUpdate(_id, { $inc: { [targetKey]: modifier } }, { new: true })
+      .findOneAndUpdate({ _id }, { $inc: { [targetKey]: modifier } }, { new: true })
       .exec();
   }
 

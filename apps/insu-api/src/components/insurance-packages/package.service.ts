@@ -45,7 +45,13 @@ export class PackageService {
     input: PackageInput,
   ): Promise<Package> {
     try {
-      return await this.packageModel.create({ ...input, memberId });
+      const result = await this.packageModel.create({ ...input, memberId });
+      await this.memberService.memberStatsEditor({
+        _id: memberId,
+        targetKey: 'memberProperties',
+        modifier: 1,
+      });
+      return result;
     } catch (error) {
       console.log('Error, Service.model:', error);
       throw new BadRequestException(Message.CREATE_FAILED);
@@ -161,6 +167,9 @@ export class PackageService {
 
     if (input.search.packageType) {
       match.packageType = input.search.packageType;
+    }
+    if (input.search.memberId) {
+      match.memberId = shapeIntoMongoObjectId(input.search.memberId);
     }
     if (input.search.text) {
       match.packageName = { $regex: new RegExp(input.search.text, 'i') };
@@ -382,7 +391,7 @@ export class PackageService {
   ): Promise<Package | null> {
     const { _id, targetKey, modifier } = input;
     return await this.packageModel
-      .findOneAndUpdate(_id, { $inc: { [targetKey]: modifier } }, { new: true })
+      .findOneAndUpdate({ _id }, { $inc: { [targetKey]: modifier } }, { new: true })
       .exec();
   }
 }

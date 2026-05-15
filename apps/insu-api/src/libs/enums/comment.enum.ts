@@ -1,6 +1,7 @@
 import { registerEnumType } from '@nestjs/graphql';
 
 export enum CommentGroup {
+  MEMBER = 'MEMBER',
   ARTICLE = 'ARTICLE',
   NOTICE = 'NOTICE',
   PACKAGE = 'PACKAGE',

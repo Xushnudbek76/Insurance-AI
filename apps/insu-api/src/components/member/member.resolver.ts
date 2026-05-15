@@ -21,7 +21,8 @@ import { ObjectId } from 'mongoose';
 import { AuthMember } from '../auth/decorators/authMember.decorator';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { MemberUpdate } from '../../libs/dto/member/member.update';
-import { createWriteStream } from 'fs';
+import { createWriteStream, mkdirSync } from 'fs';
+import { dirname } from 'path';
 import { Message } from '../../libs/enums/common.enum';
 import { GraphQLUpload, FileUpload } from 'graphql-upload';
 
@@ -43,7 +44,7 @@ export class MemberResolver {
     return this.memberService.login(input);
   }
   @UseGuards(AuthGuard)
-  @Mutation(() => String)
+  @Mutation(() => Member)
   public async updateMember(
     @Args('input') input: MemberUpdate,
     @AuthMember('_id') memberId: ObjectId,
@@ -81,7 +82,7 @@ export class MemberResolver {
   @Query(() => Members)
   public async getAgents(
     @Args('input') input: AgentsInquiry,
-    @AuthMember('id') memberId: ObjectId,
+    @AuthMember('_id') memberId: ObjectId,
   ): Promise<Members> {
     console.log('Query: getAgents');
     return await this.memberService.getAgents(memberId, input);
@@ -124,6 +125,7 @@ export class MemberResolver {
 
     const imageName = getSerialForImage(filename);
     const url = `uploads/${target}/${imageName}`;
+    mkdirSync(dirname(url), { recursive: true });
     const stream = createReadStream();
 
     const result = await new Promise((resolve, reject) => {
@@ -173,6 +175,7 @@ export class MemberResolver {
 
           const imageName = getSerialForImage(filename);
           const url = `uploads/${target}/${imageName}`;
+          mkdirSync(dirname(url), { recursive: true });
           const stream = createReadStream();
 
           const result = await new Promise((resolve, reject) => {

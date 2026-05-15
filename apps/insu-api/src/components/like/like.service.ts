@@ -65,13 +65,19 @@ export class LikeService {
   }
 
   public async checkLikeExistence(input: LikeInput): Promise<MeLiked[]> {
-    const { memberId, likeRefId } = input;
-    const result = await this.likeModel.findOne({ memberId, likeRefId }).exec();
+    const { memberId, likeRefId, likeGroup } = input;
+    const result = await this.likeModel
+      .findOne({ memberId, likeRefId, likeGroup })
+      .exec();
     return result ? [{ memberId, likeRefId, myFavorite: true }] : [];
   }
 
   public async toggleLike(input: LikeInput): Promise<number> {
-    const search: T = { memberId: input.memberId, likeRefId: input.likeRefId };
+    const search: T = {
+      memberId: input.memberId,
+      likeRefId: input.likeRefId,
+      likeGroup: input.likeGroup,
+    };
     const exist = await this.likeModel.findOne(search).exec();
     if (exist) {
       await this.likeModel.findOneAndDelete(search).exec();

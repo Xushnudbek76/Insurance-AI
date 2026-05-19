@@ -271,7 +271,7 @@ export class PackageService {
         packageViews: Direction.DESC,
         createdAt: Direction.DESC,
       })
-      .limit(15)
+      .limit(5)
       .lean()
       .exec();
   }
@@ -391,7 +391,11 @@ export class PackageService {
   ): Promise<Package | null> {
     const { _id, targetKey, modifier } = input;
     return await this.packageModel
-      .findOneAndUpdate({ _id }, { $inc: { [targetKey]: modifier } }, { new: true })
+      .findOneAndUpdate(
+        { _id },
+        { $inc: { [targetKey]: modifier } },
+        { new: true },
+      )
       .exec();
   }
 }

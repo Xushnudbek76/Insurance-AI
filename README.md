@@ -1,99 +1,123 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Insurance AI Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Insurance AI Backend is a NestJS monorepo that powers the INSU insurance platform. It provides a GraphQL API for insurance packages, policies, claims, members, authentication, community articles, comments, likes, views, file uploads, notifications, sockets, and AI-assisted insurance recommendations.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+The project follows NestJS modular architecture with modules, resolvers, services, guards, decorators, DTOs, schemas, and database providers separated by domain. MongoDB is used as the main database through Mongoose.
 
-## Description
+## Features
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- GraphQL API built with NestJS Apollo Server and TypeScript decorators.
+- Member registration, login, JWT authentication, role guards, and authenticated member decorators.
+- Insurance package management with filtering, sorting, pagination, likes, views, comments, and package statistics.
+- Policy and claim domains for managing insurance ownership and claim workflows.
+- Community article system with article creation, listing, detail pages, image uploads, likes, comments, and view tracking.
+- Shared like, view, comment, follow, and notification modules for reusable social interactions.
+- File upload support through `graphql-upload`, including uploaded community and profile assets.
+- MongoDB persistence using Mongoose schemas and DTO-based input validation.
+- AI recommendation services using OpenRouter configuration when API credentials are provided.
+- Socket.IO gateway support for real-time features.
+- Separate API and batch NestJS applications inside one monorepo.
 
-## Project setup
+## Tech Stack
 
-```bash
-$ npm install
+- NestJS 11
+- TypeScript
+- GraphQL / Apollo Server
+- Mongoose / MongoDB
+- JWT authentication
+- class-validator / class-transformer
+- graphql-upload
+- Socket.IO
+- Jest
+- ESLint and Prettier
+
+## Project Structure
+
+```txt
+apps/insu-api/src/main.ts                  API application entry point
+apps/insu-api/src/app.module.ts            Root API module
+apps/insu-api/src/database/                MongoDB connection setup
+apps/insu-api/src/components/              Domain modules, resolvers, and services
+apps/insu-api/src/components/auth/         Authentication, guards, and decorators
+apps/insu-api/src/components/member/       Member profile and upload logic
+apps/insu-api/src/components/insurance-packages/
+                                            Insurance package GraphQL domain
+apps/insu-api/src/components/board-article/
+                                            Community article GraphQL domain
+apps/insu-api/src/components/comment/      Comment domain
+apps/insu-api/src/components/like/         Like domain
+apps/insu-api/src/components/view/         View counter domain
+apps/insu-api/src/components/ai/           AI recommendation services
+apps/insu-api/src/schemas/                 Mongoose schemas
+apps/insu-api/src/libs/dto/                GraphQL DTOs and input types
+apps/insu-api/src/libs/enums/              Shared enum definitions
+apps/insu-batch/                           Batch application
 ```
 
-## Compile and run the project
+## Environment Variables
 
-```bash
-# development
-$ npm run start
+Create `.env` in the backend root:
 
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+```env
+NODE_ENV=development
+PORT_API=3007
+MONGO_DEV=mongodb://localhost:27017/insurance-dev
+MONGO_PROD=mongodb://localhost:27017/insurance-prod
+SECRET_TOKEN=your-jwt-secret
+OPENROUTER_API_KEY=your-openrouter-api-key
+OPENROUTER_MODEL=your-openrouter-model
 ```
 
-## Run tests
+`OPENROUTER_API_KEY` and `OPENROUTER_MODEL` are only required for AI recommendation features. MongoDB must be running before starting the API.
+
+## Getting Started
+
+Install dependencies:
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm install
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+Start the API in watch mode:
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+npm run start:dev
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+The GraphQL endpoint runs on:
 
-## Resources
+```txt
+http://localhost:3007/graphql
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+The exact port depends on `PORT_API`.
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+## Scripts
 
-## Support
+```bash
+npm run start           # Start the default Nest application
+npm run start:dev       # Start insu-api in watch mode
+npm run start:dev:batch # Start insu-batch in watch mode
+npm run build           # Build the NestJS project
+npm run start:prod      # Run the production build
+npm run lint            # Run ESLint with auto-fix
+npm run format          # Format TypeScript files with Prettier
+npm run test            # Run unit tests
+npm run test:watch      # Run tests in watch mode
+npm run test:cov        # Run tests with coverage
+npm run test:e2e        # Run e2e tests
+```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## GraphQL And Uploads
 
-## Stay in touch
+The API exposes queries and mutations through Apollo GraphQL. The frontend should send JSON GraphQL requests with a valid `content-type` header, or include Apollo's preflight header when using upload links.
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+For file uploads, the frontend uses multipart GraphQL requests and the backend stores uploaded files under backend-controlled upload folders. Image URLs returned by the API should be resolved by the frontend against the backend API origin.
 
-## License
+## Development Notes
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
-# Insurance-AI
+- Keep `PORT_API` aligned with the frontend `NEXT_PUBLIC_GRAPHQL_URL`.
+- Use DTOs and enums from `apps/insu-api/src/libs` when adding new GraphQL inputs.
+- Keep domain logic inside services and expose it through resolvers.
+- Use guards and decorators from the auth module for protected operations.
+- Run tests or targeted service checks after changing package, article, like, view, or comment counter logic.

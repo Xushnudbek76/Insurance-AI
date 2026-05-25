@@ -75,14 +75,15 @@ export class MemberService {
     memberId: ObjectId,
     input: MemberUpdate,
   ): Promise<Member> {
+    const { _id, ...update } = input;
     const result: Member | null = await this.memberModel
       .findOneAndUpdate(
         {
           _id: memberId,
           memberStatus: MemberStatus.ACTIVE,
         },
-        input,
-        { new: true },
+        { $set: update },
+        { returnDocument: 'after' },
       )
       .exec();
     if (!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);
@@ -192,8 +193,9 @@ export class MemberService {
     return result[0];
   }
   public async updateMemberByAdmin(input: MemberUpdate): Promise<Member> {
+    const { _id, ...update } = input;
     const result = await this.memberModel
-      .findByIdAndUpdate(input._id, input, { new: true })
+      .findByIdAndUpdate(_id, { $set: update }, { returnDocument: 'after' })
       .exec();
     if (!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);
 

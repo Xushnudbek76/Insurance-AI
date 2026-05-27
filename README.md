@@ -61,6 +61,7 @@ Create `.env` in the backend root:
 ```env
 NODE_ENV=development
 PORT_API=3007
+PORT_BATCH=3001
 MONGO_DEV=mongodb://localhost:27017/insurance-dev
 MONGO_PROD=mongodb://localhost:27017/insurance-prod
 SECRET_TOKEN=your-jwt-secret
@@ -68,7 +69,7 @@ OPENROUTER_API_KEY=your-openrouter-api-key
 OPENROUTER_MODEL=your-openrouter-model
 ```
 
-`OPENROUTER_API_KEY` and `OPENROUTER_MODEL` are only required for AI recommendation features. MongoDB must be running before starting the API.
+`OPENROUTER_API_KEY` and `OPENROUTER_MODEL` are only required for AI recommendation features. MongoDB must be running before starting the API or batch worker.
 
 ## Getting Started
 
@@ -113,6 +114,14 @@ npm run test:e2e        # Run e2e tests
 The API exposes queries and mutations through Apollo GraphQL. The frontend should send JSON GraphQL requests with a valid `content-type` header, or include Apollo's preflight header when using upload links.
 
 For file uploads, the frontend uses multipart GraphQL requests and the backend stores uploaded files under backend-controlled upload folders. Image URLs returned by the API should be resolved by the frontend against the backend API origin.
+
+## Batch Jobs
+
+The batch app uses `PORT_BATCH` and runs scheduled jobs that:
+
+- reset stored package and agent ranks before recomputing them
+- recompute `packageRank` and `memberRank` as actual leaderboard positions
+- expire active policies whose `endDate` has passed
 
 ## Development Notes
 

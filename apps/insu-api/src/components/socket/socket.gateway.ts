@@ -52,7 +52,9 @@ export class SocketGateway
 
   async handleConnection(client: Socket) {
     this.summaryClient++;
-    this.logger.log(`Client connected: ${client.id} (total: ${this.summaryClient})`);
+    this.logger.log(
+      `Client connected: ${client.id} (total: ${this.summaryClient})`,
+    );
 
     const token = client.handshake.auth?.token || client.handshake.query?.token;
     let member: Member | null = null;
@@ -84,7 +86,9 @@ export class SocketGateway
 
   handleDisconnect(client: Socket) {
     this.summaryClient--;
-    this.logger.log(`Client disconnected: ${client.id} (total: ${this.summaryClient})`);
+    this.logger.log(
+      `Client disconnected: ${client.id} (total: ${this.summaryClient})`,
+    );
 
     const member = this.clientsMap.get(client.id);
     this.clientsMap.delete(client.id);

@@ -31,12 +31,25 @@ export class InsuBatchService {
   public async batchTopPackages(): Promise<void> {
     this.logger.log('batchTopPackages: START');
     const packages = await this.packageModel
-      .find({ packageStatus: PackageStatus.ACTIVE, packageRank: 0 })
+      .find({ packageStatus: PackageStatus.ACTIVE })
       .exec();
 
-    for (const pkg of packages) {
-      const rank = pkg.packageViews * 1 + pkg.packageLikes * 2;
-      await this.packageModel.findByIdAndUpdate(pkg._id, { packageRank: rank });
+    const rankedPackages = [...packages].sort((left, right) => {
+      const scoreDiff =
+        this.getPackageScore(right) - this.getPackageScore(left);
+
+      if (scoreDiff !== 0) return scoreDiff;
+
+      const viewsDiff = (right.packageViews ?? 0) - (left.packageViews ?? 0);
+      if (viewsDiff !== 0) return viewsDiff;
+
+      return right.createdAt.getTime() - left.createdAt.getTime();
+    });
+
+    for (const [index, pkg] of rankedPackages.entries()) {
+      await this.packageModel.findByIdAndUpdate(pkg._id, {
+        packageRank: index + 1,
+      });
     }
     this.logger.log(`batchTopPackages: DONE — updated ${packages.length} packages`);
   }
@@ -44,16 +57,24 @@ export class InsuBatchService {
   public async batchTopAgents(): Promise<void> {
     this.logger.log('batchTopAgents: START');
     const agents = await this.memberModel
-      .find({ memberStatus: MemberStatus.ACTIVE, memberType: MemberType.AGENT, memberRank: 0 })
+      .find({ memberStatus: MemberStatus.ACTIVE, memberType: MemberType.AGENT })
       .exec();
 
-    for (const agent of agents) {
-      const rank =
-        agent.memberViews * 1 +
-        agent.memberLikes * 2 +
-        agent.memberArticles * 3 +
-        agent.memberProperties * 5;
-      await this.memberModel.findByIdAndUpdate(agent._id, { memberRank: rank });
+    const rankedAgents = [...agents].sort((left, right) => {
+      const scoreDiff = this.getAgentScore(right) - this.getAgentScore(left);
+
+      if (scoreDiff !== 0) return scoreDiff;
+
+      const viewsDiff = (right.memberViews ?? 0) - (left.memberViews ?? 0);
+      if (viewsDiff !== 0) return viewsDiff;
+
+      return right.createdAt.getTime() - left.createdAt.getTime();
+    });
+
+    for (const [index, agent] of rankedAgents.entries()) {
+      await this.memberModel.findByIdAndUpdate(agent._id, {
+        memberRank: index + 1,
+      });
     }
     this.logger.log(`batchTopAgents: DONE — updated ${agents.length} agents`);
   }
@@ -65,5 +86,18 @@ export class InsuBatchService {
       { policyStatus: PolicyStatus.EXPIRED },
     );
     this.logger.log(`batchExpiredPolicies: DONE — expired ${result.modifiedCount} policies`);
+  }
+
+  private getPackageScore(pkg: any): number {
+    return (pkg.packageViews ?? 0) * 1 + (pkg.packageLikes ?? 0) * 2;
+  }
+
+  private getAgentScore(agent: any): number {
+    return (
+      (agent.memberViews ?? 0) * 1 +
+      (agent.memberLikes ?? 0) * 2 +
+      (agent.memberArticles ?? 0) * 3 +
+      (agent.memberProperties ?? 0) * 5
+    );
   }
 }

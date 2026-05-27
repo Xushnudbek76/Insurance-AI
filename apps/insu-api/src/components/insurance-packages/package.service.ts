@@ -118,15 +118,16 @@ export class PackageService {
     memberId: ObjectId,
     input: PackageUpdate,
   ): Promise<Package> {
+    const { _id, ...update } = input;
     const result = await this.packageModel
       .findOneAndUpdate(
         {
-          _id: input._id,
+          _id,
           memberId,
           packageStatus: { $ne: PackageStatus.ARCHIVED },
         },
-        input,
-        { new: true },
+        { $set: update },
+        { returnDocument: 'after' },
       )
       .exec();
 
@@ -226,13 +227,14 @@ export class PackageService {
   }
 
   public async updatePackageByAdmin(input: PackageUpdate): Promise<Package> {
+    const { _id, ...update } = input;
     const result = await this.packageModel
       .findOneAndUpdate(
         {
-          _id: input._id,
+          _id,
         },
-        input,
-        { new: true },
+        { $set: update },
+        { returnDocument: 'after' },
       )
       .exec();
 

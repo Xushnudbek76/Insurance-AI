@@ -1,0 +1,353 @@
+Enum member_type {
+  USER
+  AGENT
+  ADMIN
+}
+
+Enum member_status {
+  ACTIVE
+  BLOCK
+  DELETE
+}
+
+Enum member_auth_type {
+  PHONE
+  EMAIL
+  TELEGRAM
+}
+
+Enum board_article_category {
+  NOTICE
+  FREE
+  NEWS
+  REVIEW
+}
+
+Enum board_article_status {
+  ACTIVE
+  INACTIVE
+  DELETED
+}
+
+Enum claim_status {
+  PENDING
+  APPROVED
+  REJECTED
+  SETTLED
+}
+
+Enum comment_group {
+  MEMBER
+  ARTICLE
+  NOTICE
+  PACKAGE
+}
+
+Enum comment_status {
+  ACTIVE
+  INACTIVE
+  DELETED
+}
+
+Enum faq_category {
+  POLICY
+  CLAIMS
+  PAYMENT
+  AGENTS
+  ACCOUNT
+  COMMUNITY
+  OTHER
+}
+
+Enum faq_status {
+  ACTIVE
+  INACTIVE
+  DELETED
+}
+
+Enum like_group {
+  MEMBER
+  PACKAGE
+  ARTICLE
+}
+
+Enum notice_category {
+  EVENT
+  UPDATE
+  PROMOTION
+  SYSTEM
+}
+
+Enum notice_status {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+Enum notification_group {
+  SYSTEM
+  ARTICLE
+  SOCIAL
+}
+
+Enum notification_status {
+  WAIT
+  SENT
+  FAILED
+  READ
+}
+
+Enum notification_type {
+  INFO
+  WARNING
+  ERROR
+  SUCCESS
+}
+
+Enum insurance_type {
+  TERM_LIFE
+  WHOLE_LIFE
+  PET
+  CRITICAL_ILLNESS
+  DISABILITY
+  TRAVEL
+  CYBER_LIABILITY
+  PROFESSIONAL_INDEMNITY
+  LEGAL_EXPENSE
+  ACCIDENT
+  HEALTH
+  AUTO
+  HOME
+}
+
+Enum package_status {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+Enum policy_status {
+  ACTIVE
+  INACTIVE
+  CANCELLED
+  EXPIRED
+  PENDING
+}
+
+Enum view_group {
+  MEMBER
+  AGENT
+  PACKAGE
+  ARTICLE
+  NOTICE
+}
+
+Table members {
+  id varchar [primary key, note: 'Mongo ObjectId (_id)']
+  member_type member_type [default: 'USER']
+  member_status member_status [default: 'ACTIVE']
+  member_auth_type member_auth_type [default: 'PHONE']
+  member_phone varchar [not null, unique]
+  member_nick varchar [not null, unique]
+  member_password varchar [not null, note: 'select:false in Mongoose']
+  member_full_name varchar
+  member_image varchar [default: '']
+  member_address varchar
+  member_desc text
+  member_properties int [default: 0]
+  member_articles int [default: 0]
+  member_followers int [default: 0]
+  member_followings int [default: 0]
+  member_points int [default: 0]
+  member_likes int [default: 0]
+  member_views int [default: 0]
+  member_comments int [default: 0]
+  member_rank int [default: 0]
+  member_warnings int [default: 0]
+  member_blocks int [default: 0]
+  deleted_at timestamp
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table follows {
+  id varchar [primary key, note: 'Mongo ObjectId (_id)']
+  following_id varchar [not null, note: 'Target member being followed']
+  follower_id varchar [not null, note: 'Member who follows']
+  created_at timestamp
+  updated_at timestamp
+
+  indexes {
+    (following_id, follower_id) [unique]
+  }
+}
+
+Table packages {
+  id varchar [primary key, note: 'Mongo ObjectId (_id)']
+  package_type insurance_type [not null]
+  package_status package_status [default: 'ACTIVE']
+  package_name varchar [not null]
+  package_desc text
+  package_price decimal [not null]
+  package_coverage_limit decimal
+  package_min_age int
+  package_max_age int
+  package_asset_tags text [note: 'String[] in Mongoose']
+  package_images text [note: 'String[] in Mongoose']
+  package_views int [default: 0]
+  package_likes int [default: 0]
+  package_comments int [default: 0]
+  package_rank int [default: 0]
+  member_id varchar [note: 'Ref Member; nullable in schema']
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table policies {
+  id varchar [primary key, note: 'Mongo ObjectId (_id)']
+  policy_status policy_status [default: 'ACTIVE']
+  member_id varchar [not null]
+  package_id varchar [not null]
+  agent_id varchar [not null, note: 'Stored as plain string field AgentId in schema, not ObjectId ref']
+  member_nick varchar [not null]
+  package_name varchar [not null]
+  premium_amount decimal [not null]
+  start_date timestamp [not null]
+  end_date timestamp [not null]
+  cancelled_at timestamp
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table claims {
+  id varchar [primary key, note: 'Mongo ObjectId (_id)']
+  claim_status claim_status [default: 'PENDING']
+  member_id varchar [not null]
+  policy_id varchar [not null]
+  agent_id varchar [not null, note: 'Stored as plain string, not ObjectId ref']
+  claim_title varchar [not null]
+  claim_desc text
+  claim_amount decimal [not null]
+  claim_documents text [note: 'String[] in Mongoose']
+  ai_analysis text
+  agent_note text
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table board_articles {
+  id varchar [primary key, note: 'Mongo ObjectId (_id)']
+  article_category board_article_category [not null]
+  article_status board_article_status [default: 'ACTIVE']
+  article_title varchar [not null]
+  article_content text [not null]
+  article_image varchar
+  article_likes int [default: 0]
+  article_views int [default: 0]
+  article_comments int [default: 0]
+  member_id varchar [not null]
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table comments {
+  id varchar [primary key, note: 'Mongo ObjectId (_id)']
+  comment_status comment_status [default: 'ACTIVE']
+  comment_group comment_group [not null]
+  comment_content text [not null]
+  comment_ref_id varchar [not null, note: 'Polymorphic target id: member/article/notice/package']
+  member_id varchar [not null]
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table faqs {
+  id varchar [primary key, note: 'Mongo ObjectId (_id)']
+  faq_category faq_category [not null]
+  faq_status faq_status [default: 'ACTIVE']
+  faq_question varchar [not null]
+  faq_answer text [not null]
+  faq_order int [default: 0]
+  member_id varchar [not null]
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table notices {
+  id varchar [primary key, note: 'Mongo ObjectId (_id)']
+  notice_category notice_category [not null]
+  notice_status notice_status [default: 'ACTIVE']
+  notice_title varchar [not null]
+  notice_content text [not null]
+  member_id varchar [not null]
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table likes {
+  id varchar [primary key, note: 'Mongo ObjectId (_id)']
+  like_group like_group [not null]
+  like_ref_id varchar [not null, note: 'Polymorphic target id: member/package/article']
+  member_id varchar [not null]
+  created_at timestamp
+  updated_at timestamp
+
+  indexes {
+    (member_id, like_ref_id, like_group) [unique]
+  }
+}
+
+Table views {
+  id varchar [primary key, note: 'Mongo ObjectId (_id)']
+  view_group view_group [not null]
+  view_ref_id varchar [not null, note: 'Polymorphic target id: member/agent/package/article/notice']
+  member_id varchar [not null]
+  created_at timestamp
+  updated_at timestamp
+
+  indexes {
+    (member_id, view_ref_id, view_group) [unique]
+  }
+}
+
+Table notifications {
+  id varchar [primary key, note: 'Mongo ObjectId (_id)']
+  notification_type notification_type [not null]
+  notification_status notification_status [default: 'WAIT']
+  notification_group notification_group [not null]
+  notification_title varchar [not null]
+  notification_desc text
+  author_id varchar [not null]
+  receiver_id varchar [not null]
+  property_id varchar [note: 'Refers to Property, but Property schema not present in this repo']
+  article_id varchar [note: 'Optional BoardArticle ref']
+  created_at timestamp
+  updated_at timestamp
+}
+
+Ref: follows.following_id > members.id
+Ref: follows.follower_id > members.id
+
+Ref: packages.member_id > members.id
+
+Ref: policies.member_id > members.id
+Ref: policies.package_id > packages.id
+
+Ref: claims.member_id > members.id
+Ref: claims.policy_id > policies.id
+
+Ref: board_articles.member_id > members.id
+
+Ref: comments.member_id > members.id
+
+Ref: faqs.member_id > members.id
+
+Ref: notices.member_id > members.id
+
+Ref: likes.member_id > members.id
+
+Ref: views.member_id > members.id
+
+Ref: notifications.author_id > members.id
+Ref: notifications.receiver_id > members.id
+Ref: notifications.article_id > board_articles.id

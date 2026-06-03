@@ -1,0 +1,27 @@
+services:
+  backend:
+    build:
+      context: ${BACKEND_CONTEXT:-..}
+      dockerfile: Dockerfile
+    env_file:
+      - ${BACKEND_ENV_FILE:-../.env}
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${BACKEND_PORT:-3007}:3007"
+    volumes:
+      - ${BACKEND_UPLOADS_DIR:-../uploads}:/app/uploads
+
+  frontend:
+    build:
+      context: ${FRONTEND_CONTEXT:-../../insu-web}
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_GRAPHQL_URL: ${NEXT_PUBLIC_GRAPHQL_URL}
+        NEXT_PUBLIC_SOCKET_URL: ${NEXT_PUBLIC_SOCKET_URL}
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL}
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "127.0.0.1:${FRONTEND_PORT:-3000}:3000"

@@ -1,3 +1,5 @@
+import { ChatModule } from '../chat/chat.module';
+import { PolicyOfferService } from './policy-offer.service';
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import PolicySchema from '../../schemas/Policy.model';
@@ -13,8 +15,9 @@ import { PolicyService } from './policy.service';
       { name: 'Package', schema: PackageSchema },
     ]),
     AuthModule,
+    ChatModule,
   ],
-  providers: [PolicyResolver, PolicyService],
+  providers: [PolicyResolver, PolicyService, PolicyOfferService],
   exports: [PolicyService],
 })
 export class PolicyModule {}

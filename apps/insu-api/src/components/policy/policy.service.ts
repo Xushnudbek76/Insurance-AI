@@ -1,3 +1,4 @@
+import { ChatAccessService } from '../chat/chat-access.service';
 import {
   BadRequestException,
   ForbiddenException,
@@ -23,6 +24,7 @@ export class PolicyService {
   constructor(
     @InjectModel('Policy') private readonly policyModel: Model<Policy>,
     @InjectModel('Package') private readonly packageModel: Model<Package>,
+    private readonly access: ChatAccessService,
   ) {}
 
   public async purchasePolicy(
@@ -30,53 +32,20 @@ export class PolicyService {
     memberNick: string,
     packageId: ObjectId,
   ): Promise<Policy> {
-    const targetPackage = await this.packageModel
-      .findOne({
-        _id: packageId,
-        packageStatus: PackageStatus.ACTIVE,
-      })
-      .lean()
-      .exec();
-
-    if (!targetPackage) {
-      throw new InternalServerErrorException(Message.NO_DATA_FOUND);
-    }
-
-    const existingPolicy = await this.policyModel
-      .findOne({
-        memberId,
-        packageId,
-        policyStatus: PolicyStatus.ACTIVE,
-      })
-      .lean()
-      .exec();
-
-    if (existingPolicy) {
-      throw new BadRequestException(Message.ACTIVE_POLICY_ALREADY_EXISTS);
-    }
-
-    const startDate = new Date();
-    const endDate = new Date(startDate);
-    endDate.setFullYear(endDate.getFullYear() + 1);
-
-    return await this.policyModel.create({
-      memberId,
-      packageId,
-      memberNick,
-      packageName: targetPackage.packageName,
-      premiumAmount: targetPackage.packagePrice,
-      AgentId: `${targetPackage.memberId}`,
-      startDate,
-      endDate,
-      policyStatus: PolicyStatus.ACTIVE,
-    });
+    throw new BadRequestException(
+      'Please chat with the agent to purchase this insurance.',
+    );
   }
 
   public async getMyPolicies(
     memberId: ObjectId,
     input: MyPoliciesInquiry,
   ): Promise<Policies> {
-    const match: T = { memberId };
+    await this.access.requireActiveMember(memberId);
+    const match: T = {
+      memberId,
+      purchaseStage: { $nin: ['OFFERED', 'DECLINED', 'WITHDRAWN'] },
+    };
 
     if (input.search.policyStatus) {
       match.policyStatus = input.search.policyStatus;
@@ -95,15 +64,20 @@ export class PolicyService {
     memberId: ObjectId,
     memberType: MemberType,
   ): Promise<Policy> {
+    await this.access.requireActiveMember(memberId);
     const targetPolicy = await this.policyModel.findById(policyId).exec();
 
     if (!targetPolicy) {
       throw new InternalServerErrorException(Message.NO_DATA_FOUND);
     }
 
+    const linked = !!targetPolicy.conversationId;
+    const assignedAgent = linked && `${targetPolicy.AgentId}` === `${memberId}`;
+    const issued = !linked || !!targetPolicy.paymentConfirmedAt;
     if (
-      memberType !== MemberType.ADMIN &&
-      `${targetPolicy.memberId}` !== `${memberId}`
+      `${targetPolicy.memberId}` !== `${memberId}` &&
+      !assignedAgent &&
+      !(memberType === MemberType.ADMIN && issued)
     ) {
       throw new ForbiddenException(Message.ONLY_SPECIFIC_ROLES_ALLOWED);
     }
@@ -116,6 +90,7 @@ export class PolicyService {
     memberId: ObjectId,
     memberType: MemberType,
   ): Promise<Policy> {
+    await this.access.requireActiveMember(memberId);
     const targetPolicy = await this.policyModel.findById(policyId).exec();
 
     if (!targetPolicy) {
@@ -124,7 +99,7 @@ export class PolicyService {
 
     if (
       memberType !== MemberType.ADMIN &&
-      `${targetPolicy.memberId}` !== `${memberId}`
+      String(targetPolicy.memberId) !== String(memberId)
     ) {
       throw new ForbiddenException(Message.ONLY_SPECIFIC_ROLES_ALLOWED);
     }
@@ -139,6 +114,7 @@ export class PolicyService {
         {
           policyStatus: PolicyStatus.CANCELLED,
           cancelledAt: new Date(),
+          purchaseOpen: false,
         },
         { new: true },
       )
@@ -154,16 +130,25 @@ export class PolicyService {
   public async adminGetAllPolicies(
     input: AllPoliciesInquiry,
   ): Promise<Policies> {
-    const match: T = {};
+    const match: T = {
+      $or: [
+        { conversationId: { $exists: false } },
+        { paymentConfirmedAt: { $ne: null } },
+      ],
+    };
 
     if (input.search.policyStatus) {
       match.policyStatus = input.search.policyStatus;
     }
     if (input.search.text) {
       const textRegex = new RegExp(input.search.text, 'i');
-      match.$or = [
-        { memberNick: { $regex: textRegex } },
-        { packageName: { $regex: textRegex } },
+      match.$and = [
+        {
+          $or: [
+            { memberNick: { $regex: textRegex } },
+            { packageName: { $regex: textRegex } },
+          ],
+        },
       ];
     }
 

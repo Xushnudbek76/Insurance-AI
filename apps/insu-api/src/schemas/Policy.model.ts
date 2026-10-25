@@ -1,8 +1,17 @@
 import { Schema } from 'mongoose';
-import { PolicyStatus } from '../libs/enums/policy.enum';
+import { PolicyStatus, PurchaseStage } from '../libs/enums/policy.enum';
 
 const PolicySchema = new Schema(
   {
+    conversationId: { type: Schema.Types.ObjectId },
+    purchaseStage: { type: String, enum: PurchaseStage },
+    purchaseOpen: { type: Boolean },
+    coverageLimit: { type: Number },
+    offeredAt: Date,
+    acceptedAt: Date,
+    paymentConfirmedAt: Date,
+    paymentConfirmedBy: { type: Schema.Types.ObjectId },
+    closedAt: Date,
     policyStatus: {
       type: String,
       enum: PolicyStatus,

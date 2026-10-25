@@ -10,3 +10,12 @@ export enum PolicyStatus {
 registerEnumType(PolicyStatus, {
   name: 'PolicyStatus',
 });
+
+export enum PurchaseStage {
+  OFFERED = 'OFFERED',
+  AWAITING_PAYMENT = 'AWAITING_PAYMENT',
+  CONFIRMED = 'CONFIRMED',
+  DECLINED = 'DECLINED',
+  WITHDRAWN = 'WITHDRAWN',
+}
+registerEnumType(PurchaseStage, { name: 'PurchaseStage' });

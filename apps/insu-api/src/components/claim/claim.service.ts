@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   InternalServerErrorException,
 } from '@nestjs/common';
@@ -43,9 +44,18 @@ export class ClaimService {
       throw new InternalServerErrorException(Message.NO_DATA_FOUND);
     }
 
+    if (String(policy.memberId) !== String(memberIdObj))
+      throw new ForbiddenException('Only the policy holder can submit a claim');
+
     if (policy.policyStatus !== PolicyStatus.ACTIVE) {
       throw new BadRequestException('Only active policies can submit claims');
     }
+
+    const now = new Date();
+    if (now < new Date(policy.startDate) || now > new Date(policy.endDate))
+      throw new BadRequestException(
+        'Claims are only available during the policy coverage dates',
+      );
 
     const existingClaim = await this.claimModel
       .findOne({
@@ -67,12 +77,12 @@ export class ClaimService {
       .lean()
       .exec();
 
-    if (
-      targetPackage?.packageCoverageLimit &&
-      input.claimAmount > targetPackage.packageCoverageLimit
-    ) {
+    const coverage = policy.purchaseStage
+      ? policy.coverageLimit
+      : targetPackage?.packageCoverageLimit || null;
+    if (coverage != null && input.claimAmount > coverage) {
       throw new BadRequestException(
-        `Claim amount exceeds coverage limit of ${targetPackage.packageCoverageLimit}`,
+        `Claim amount exceeds coverage limit of ${coverage}`,
       );
     }
 

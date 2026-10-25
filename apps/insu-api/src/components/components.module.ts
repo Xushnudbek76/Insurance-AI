@@ -1,3 +1,4 @@
+import { ChatModule } from './chat/chat.module';
 import { Module } from '@nestjs/common';
 import { AiModule } from './ai/ai.module';
 import { MemberModule } from './member/member.module';
@@ -14,6 +15,7 @@ import { FaqModule } from './faq/faq.module';
 
 @Module({
   imports: [
+    ChatModule,
     MemberModule,
     InsuranceModule,
     AiModule,

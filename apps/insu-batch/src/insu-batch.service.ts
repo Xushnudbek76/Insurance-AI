@@ -1,7 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { MemberStatus, MemberType } from '../../insu-api/src/libs/enums/member.enum';
+import {
+  MemberStatus,
+  MemberType,
+} from '../../insu-api/src/libs/enums/member.enum';
 import { PackageStatus } from '../../insu-api/src/libs/enums/package.enum';
 import { PolicyStatus } from '../../insu-api/src/libs/enums/policy.enum';
 
@@ -51,7 +54,9 @@ export class InsuBatchService {
         packageRank: index + 1,
       });
     }
-    this.logger.log(`batchTopPackages: DONE — updated ${packages.length} packages`);
+    this.logger.log(
+      `batchTopPackages: DONE — updated ${packages.length} packages`,
+    );
   }
 
   public async batchTopAgents(): Promise<void> {
@@ -83,9 +88,11 @@ export class InsuBatchService {
     this.logger.log('batchExpiredPolicies: START');
     const result = await this.policyModel.updateMany(
       { endDate: { $lt: new Date() }, policyStatus: PolicyStatus.ACTIVE },
-      { policyStatus: PolicyStatus.EXPIRED },
+      { policyStatus: PolicyStatus.EXPIRED, purchaseOpen: false },
     );
-    this.logger.log(`batchExpiredPolicies: DONE — expired ${result.modifiedCount} policies`);
+    this.logger.log(
+      `batchExpiredPolicies: DONE — expired ${result.modifiedCount} policies`,
+    );
   }
 
   private getPackageScore(pkg: any): number {

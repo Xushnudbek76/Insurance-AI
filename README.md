@@ -130,3 +130,9 @@ The batch app uses `PORT_BATCH` and runs scheduled jobs that:
 - Keep domain logic inside services and expose it through resolvers.
 - Use guards and decorators from the auth module for protected operations.
 - Run tests or targeted service checks after changing package, article, like, view, or comment counter logic.
+
+## Private agent conversations and direct purchases
+
+Clients open **Chat with Agent** on a package. Private, saved Messages are available in My Page on desktop/mobile. Agents send a fixed-price package offer with coverage dates; clients accept and pay agents directly. The agent records payment receipt to activate the policy. The website does not collect or independently verify payments.
+
+Use `npm run test:agent-chat` for GraphQL/database integration checks; it creates and removes a uniquely named isolated test database, without using development policy records. See `docs/agent-chat-rollout.md` for the required audit/index migration. Existing direct `purchasePolicy` calls are blocked.

@@ -1,5 +1,6 @@
+import { PolicyOfferService } from './policy-offer.service';
 import { UseGuards } from '@nestjs/common';
-import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Args, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { ObjectId } from 'mongoose';
 import { AuthMember } from '../auth/decorators/authMember.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -17,7 +18,10 @@ import { PolicyService } from './policy.service';
 
 @Resolver()
 export class PolicyResolver {
-  constructor(private readonly policyService: PolicyService) {}
+  constructor(
+    private readonly policyService: PolicyService,
+    private readonly offers: PolicyOfferService,
+  ) {}
 
   @UseGuards(AuthGuard)
   @Mutation(() => Policy)
@@ -82,5 +86,58 @@ export class PolicyResolver {
   ): Promise<Policies> {
     console.log('Query: adminGetAllPolicies');
     return await this.policyService.adminGetAllPolicies(input);
+  }
+
+  @UseGuards(AuthGuard)
+  @Mutation(() => Policy)
+  sendPolicyOffer(
+    @Args('conversationId') id: string,
+    @Args('startDate', { type: () => Date }) start: Date,
+    @Args('endDate', { type: () => Date }) end: Date,
+    @AuthMember('_id') actor: any,
+  ) {
+    return this.offers.sendPolicyOffer(id, actor, start, end);
+  }
+  @UseGuards(AuthGuard)
+  @Query(() => Policies)
+  getConversationOffers(
+    @Args('conversationId') id: string,
+    @Args('page', { type: () => Int }) page: number,
+    @Args('limit', { type: () => Int }) limit: number,
+    @AuthMember('_id') actor: any,
+  ) {
+    return this.offers.getConversationOffers(id, actor, page, limit);
+  }
+  @UseGuards(AuthGuard)
+  @Mutation(() => Policy)
+  acceptPolicyOffer(
+    @Args('policyId') id: string,
+    @AuthMember('_id') actor: any,
+  ) {
+    return this.offers.transition(id, actor, 'accept');
+  }
+  @UseGuards(AuthGuard)
+  @Mutation(() => Policy)
+  declinePolicyOffer(
+    @Args('policyId') id: string,
+    @AuthMember('_id') actor: any,
+  ) {
+    return this.offers.transition(id, actor, 'decline');
+  }
+  @UseGuards(AuthGuard)
+  @Mutation(() => Policy)
+  withdrawPolicyOffer(
+    @Args('policyId') id: string,
+    @AuthMember('_id') actor: any,
+  ) {
+    return this.offers.transition(id, actor, 'withdraw');
+  }
+  @UseGuards(AuthGuard)
+  @Mutation(() => Policy)
+  confirmPolicyPayment(
+    @Args('policyId') id: string,
+    @AuthMember('_id') actor: any,
+  ) {
+    return this.offers.transition(id, actor, 'confirm');
   }
 }

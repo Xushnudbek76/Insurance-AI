@@ -18,7 +18,9 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./apps/insu-api/test/jest-e2e.json"
+    "test:e2e": "jest --config ./apps/insu-api/test/jest-e2e.json",
+    "migrate:purchase-open": "ts-node scripts/migrate-policy-purchase-open.ts",
+    "test:agent-chat": "jest --config apps/insu-api/test/jest-agent-chat-e2e.json --runInBand"
   },
   "dependencies": {
     "@as-integrations/express5": "^1.1.2",

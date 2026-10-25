@@ -1,8 +1,0 @@
-{
-  "rootDir": "../../..",
-  "testEnvironment": "node",
-  "testRegex": "agent-chat-purchase.e2e-spec.ts$",
-  "transform": { "^.+\\.(t|j)s$": "ts-jest" },
-  "testTimeout": 60000,
-  "maxWorkers": 1
-}

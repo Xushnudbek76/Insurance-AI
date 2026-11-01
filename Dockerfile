@@ -3,7 +3,7 @@ FROM node:22-bookworm-slim AS deps
 WORKDIR /app
 
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm ci --no-audit --no-fund
 
 FROM deps AS build
 
@@ -12,7 +12,7 @@ WORKDIR /app
 COPY nest-cli.json tsconfig.json tsconfig.build.json ./
 COPY apps ./apps
 
-RUN npm run build:deploy && npm prune --omit=dev
+RUN npm run build:deploy && npm prune --omit=dev --no-audit --no-fund
 
 FROM node:22-bookworm-slim AS runner
 

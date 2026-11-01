@@ -111,3 +111,5 @@ Legacy localStorage JWTs are deliberately rejected. Existing users need to sign 
 For subsequent releases, update app/job image tags only. Do not run the manual migration job for this cookie change. Keep one API replica until a shared Socket.IO adapter is introduced.
 
 Dependency audit at this release found existing advisories outside the cookie migration. The compatible `proxy-addr` 2.0.8 patch removes its critical IP-spoofing advisory. The production-only audit still reports 17 high and 3 moderate advisories, including GraphQL/upload dependency chains; some suggested fixes require major Nest GraphQL/upload upgrades. Track and test those separately rather than using an unreviewed forced upgrade. This release is not a complete dependency-security clearance.
+
+Image installation/pruning disables npm audit network requests. Run the explicit production dependency audit before release; this keeps package-registry audit retries from stalling an otherwise reproducible image build.

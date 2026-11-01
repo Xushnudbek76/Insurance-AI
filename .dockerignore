@@ -7,3 +7,6 @@ dist
 npm-debug.log
 Dockerfile*
 deploy/.env.compose
+deploy/azure/.env.azure
+deploy/azure/.runtime
+uploads

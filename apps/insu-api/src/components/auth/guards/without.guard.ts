@@ -1,5 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { AuthService } from '../auth.service';
+import { requestToken, verifiedMember } from '../session-security';
 
 @Injectable()
 export class WithoutGuard implements CanActivate {
@@ -10,22 +11,22 @@ export class WithoutGuard implements CanActivate {
 
     if (context.contextType === 'graphql') {
       const request = context.getArgByIndex(2).req,
-        bearerToken = request.headers.authorization;
+        bearerToken = requestToken(request);
 
       if (bearerToken) {
         try {
-          const token = bearerToken.split(' ')[1],
+          const token = bearerToken,
             authMember = await this.authService.verifyToken(token);
-          request.body.authMember = authMember;
+          request[verifiedMember] = authMember;
         } catch (err) {
-          console.error('Invalid token provided to [WithoutGuard] =>', err);
-          request.body.authMember = null;
+          // An invalid session is treated as anonymous on public queries.
+          request[verifiedMember] = null;
         }
-      } else request.body.authMember = null;
+      } else request[verifiedMember] = null;
 
       console.log(
         'memberNick[without] =>',
-        request.body.authMember?.memberNick ?? 'none',
+        request[verifiedMember]?.memberNick ?? 'none',
       );
       return true;
     }

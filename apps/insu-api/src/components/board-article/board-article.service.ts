@@ -118,13 +118,29 @@ export class BoardArticleService {
     memberId: ObjectId,
     input: BoardArticleUpdate,
   ): Promise<BoardArticle> {
-    const { _id, articleStatus } = input;
-
+    const { _id, articleStatus, articleTitle, articleContent, articleImage } =
+      input;
+    if (
+      articleStatus &&
+      ![BoardArticleStatus.ACTIVE, BoardArticleStatus.DELETED].includes(
+        articleStatus,
+      )
+    ) {
+      throw new BadRequestException('Unsupported article status');
+    }
+    const update = Object.fromEntries(
+      Object.entries({
+        articleStatus,
+        articleTitle,
+        articleContent,
+        articleImage,
+      }).filter(([, value]) => value !== undefined),
+    );
     const result = await this.boardArticleModel
-      .findByIdAndUpdate(
-        { _id: _id, articleStatus: BoardArticleStatus.ACTIVE },
-        input,
-        { new: true },
+      .findOneAndUpdate(
+        { _id, memberId, articleStatus: BoardArticleStatus.ACTIVE },
+        { $set: update },
+        { new: true, runValidators: true },
       )
       .exec();
     if (!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);
@@ -265,7 +281,11 @@ export class BoardArticleService {
   ): Promise<BoardArticle | null> {
     const { _id, targetKey, modifier } = input;
     return await this.boardArticleModel
-      .findOneAndUpdate({ _id }, { $inc: { [targetKey]: modifier } }, { new: true })
+      .findOneAndUpdate(
+        { _id },
+        { $inc: { [targetKey]: modifier } },
+        { new: true },
+      )
       .exec();
   }
 

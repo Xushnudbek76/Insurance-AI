@@ -1,24 +1,25 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import * as request from 'supertest';
-import { InsuApiModule } from '../src/insu-api.module';
+import request from 'supertest';
+import { AppController } from '../src/app.controller';
+import { AppService } from '../src/app.service';
 
-describe('InsuApiController (e2e)', () => {
+describe('API HTTP smoke test', () => {
   let app: INestApplication;
-
-  beforeEach(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [InsuApiModule],
+  beforeAll(async () => {
+    const module = await Test.createTestingModule({
+      controllers: [AppController],
+      providers: [AppService],
     }).compile();
-
-    app = moduleFixture.createNestApplication();
+    app = module.createNestApplication();
     await app.init();
   });
-
-  it('/ (GET)', () => {
-    return request(app.getHttpServer())
+  afterAll(async () => {
+    await app.close();
+  });
+  it('serves the API welcome route without requiring production infrastructure', () =>
+    request(app.getHttpServer())
       .get('/')
       .expect(200)
-      .expect('Hello World!');
-  });
+      .expect('Welcome to Nestar API server!'));
 });

@@ -27,7 +27,7 @@ export class MemberUpdate {
   memberNick: string | undefined;
 
   @IsOptional()
-  @Length(5, 12)
+  @Length(8, 72)
   @Field(() => String, { nullable: true })
   memberPassword?: string;
 
@@ -49,4 +49,17 @@ export class MemberUpdate {
   memberDesc?: string;
 
   deleteAt?: Date;
+}
+
+@InputType()
+export class ChangePasswordInput {
+  @IsNotEmpty()
+  @Length(5, 72)
+  @Field(() => String)
+  currentPassword: string;
+
+  @IsNotEmpty()
+  @Length(8, 72)
+  @Field(() => String)
+  newPassword: string;
 }

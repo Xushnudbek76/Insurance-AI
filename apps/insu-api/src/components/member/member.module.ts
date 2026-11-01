@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MemberResolver } from './member.resolver';
+import { MemberPrivacyResolver } from './member-privacy.resolver';
 import { MemberService } from './member.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import MemberSchema from '../../schemas/Member.model';
@@ -16,7 +17,7 @@ import { LikeModule } from '../like/like.module';
     ViewModule,
     LikeModule,
   ],
-  providers: [MemberResolver, MemberService],
+  providers: [MemberResolver, MemberPrivacyResolver, MemberService],
   exports: [MemberService],
 })
 export class MemberModule {}

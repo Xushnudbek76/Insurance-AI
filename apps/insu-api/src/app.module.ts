@@ -8,12 +8,15 @@ import { AppResolver } from './app.resolver';
 import { ComponentsModule } from './components/components.module';
 import { DatabaseModule } from './database/database.module';
 import { T } from './libs/types/common';
+import { HealthController } from './health.controller';
+import { graphqlSafetyOptions } from './libs/request-safety';
 @Module({
   imports: [
     ConfigModule.forRoot(),
     GraphQLModule.forRoot({
       driver: ApolloDriver,
-      playground: true,
+      playground: process.env.NODE_ENV !== 'production',
+      ...graphqlSafetyOptions,
       uploads: false,
       autoSchemaFile: true,
       formatError: (error) => {
@@ -49,7 +52,7 @@ import { T } from './libs/types/common';
     ComponentsModule,
     DatabaseModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, HealthController],
   providers: [AppService, AppResolver],
 })
 export class AppModule {}

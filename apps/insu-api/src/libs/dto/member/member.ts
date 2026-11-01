@@ -22,13 +22,14 @@ export class Member {
   @Field(() => MemberAuthType)
   memberAuthType: MemberAuthType;
 
-  @Field(() => String)
-  memberPhone: string;
+  @Field(() => String, { nullable: true })
+  memberPhone?: string;
 
   @Field(() => String)
   memberNick: string;
 
   memberPassword: string;
+  authVersion?: number;
 
   @Field(() => String, { nullable: true })
   memberFullName?: string;
@@ -90,8 +91,9 @@ export class Member {
   @Field(() => [MeFollowed], { nullable: true })
   meFollowed?: MeFollowed[];
 
-  @Field(() => String, { nullable: true })
   accessToken?: string;
+  sessionId?: string;
+  exp?: number;
 }
 
 @ObjectType('MemberTotalCounter')

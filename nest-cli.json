@@ -16,6 +16,24 @@
         "tsConfigPath": "apps/insu-api/tsconfig.app.json"
       }
     },
+    "insu-batch-job": {
+      "type": "application",
+      "root": "apps/insu-batch",
+      "entryFile": "run-once",
+      "sourceRoot": "apps/insu-batch/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/insu-batch/tsconfig.app.json"
+      }
+    },
+    "insu-migration": {
+      "type": "application",
+      "root": "apps/insu-api",
+      "entryFile": "migrate-policy-purchase-open",
+      "sourceRoot": "apps/insu-api/scripts",
+      "compilerOptions": {
+        "tsConfigPath": "apps/insu-api/tsconfig.migration.json"
+      }
+    },
     "insu-batch": {
       "type": "application",
       "root": "apps/insu-batch",

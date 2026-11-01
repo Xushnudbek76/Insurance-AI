@@ -1,24 +1,22 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import * as request from 'supertest';
-import { InsuBatchModule } from './../src/insu-batch.module';
+import request from 'supertest';
+import { InsuBatchController } from '../src/insu-batch.controller';
+import { InsuBatchService } from '../src/insu-batch.service';
 
-describe('InsuBatchController (e2e)', () => {
+describe('Batch HTTP smoke test', () => {
   let app: INestApplication;
-
-  beforeEach(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [InsuBatchModule],
+  beforeAll(async () => {
+    const module = await Test.createTestingModule({
+      controllers: [InsuBatchController],
+      providers: [{ provide: InsuBatchService, useValue: {} }],
     }).compile();
-
-    app = moduleFixture.createNestApplication();
+    app = module.createNestApplication();
     await app.init();
   });
-
-  it('/ (GET)', () => {
-    return request(app.getHttpServer())
-      .get('/')
-      .expect(200)
-      .expect('Hello World!');
+  afterAll(async () => {
+    await app.close();
   });
+  it('does not expose scheduled job methods as public HTTP routes', () =>
+    request(app.getHttpServer()).get('/').expect(404));
 });

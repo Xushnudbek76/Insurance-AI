@@ -43,6 +43,8 @@ lerna-debug.log*
 .env.test.local
 .env.production.local
 .env.local
+deploy/azure/.env.azure
+deploy/azure/.runtime/
 
 # temp directory
 .temp
@@ -56,3 +58,6 @@ pids
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# User-uploaded runtime files
+/uploads/

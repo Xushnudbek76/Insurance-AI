@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId } from 'mongoose';
@@ -18,7 +19,10 @@ import { ViewService } from '../view/view.service';
 import { AuthService } from '../auth/auth.service';
 import { ViewGroup } from '../../libs/enums/view.enum';
 import { StatisticModifier, T } from '../../libs/types/common';
-import { MemberUpdate } from '../../libs/dto/member/member.update';
+import {
+  MemberUpdate,
+  ChangePasswordInput,
+} from '../../libs/dto/member/member.update';
 import { Follower, Following, MeFollowed } from '../../libs/dto/follow/follow';
 import { LikeService } from '../like/like.service';
 import { LikeInput } from '../../libs/dto/like/like.input';
@@ -37,6 +41,11 @@ export class MemberService {
   ) {}
 
   public async signup(input: MemberInput): Promise<Member> {
+    if (input.memberType === MemberType.ADMIN) {
+      throw new BadRequestException(
+        'Administrator accounts cannot be registered publicly',
+      );
+    }
     input.memberPassword = await this.authService.hashPassword(
       input.memberPassword,
     );
@@ -79,7 +88,17 @@ export class MemberService {
     memberId: ObjectId,
     input: MemberUpdate,
   ): Promise<Member> {
-    const { _id, ...update } = input;
+    if (input.memberType !== undefined || input.memberStatus !== undefined) {
+      throw new BadRequestException(
+        'Account roles and status require an administrator',
+      );
+    }
+    if (input.memberPassword !== undefined) {
+      throw new BadRequestException(
+        'Use changePassword to update your password',
+      );
+    }
+    const { _id, memberPassword, ...update } = input;
     const result: Member | null = await this.memberModel
       .findOneAndUpdate(
         {
@@ -87,14 +106,54 @@ export class MemberService {
           memberStatus: MemberStatus.ACTIVE,
         },
         { $set: update },
-        { returnDocument: 'after' },
+        { returnDocument: 'after', runValidators: true },
       )
       .exec();
     if (!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);
 
+    return result;
+  }
+  public async changePassword(
+    memberId: ObjectId,
+    input: ChangePasswordInput,
+  ): Promise<Member> {
+    if (Buffer.byteLength(input.newPassword, 'utf8') > 72) {
+      throw new BadRequestException('Password must be at most 72 UTF-8 bytes');
+    }
+    const member = await this.memberModel
+      .findOne({ _id: memberId, memberStatus: MemberStatus.ACTIVE })
+      .select('+memberPassword')
+      .exec();
+    if (
+      !member ||
+      !(await this.authService.comparePasswords(
+        input.currentPassword,
+        member.memberPassword,
+      ))
+    ) {
+      throw new UnauthorizedException('Current password is incorrect');
+    }
+    const memberPassword = await this.authService.hashPassword(
+      input.newPassword,
+    );
+    const result = await this.memberModel
+      .findOneAndUpdate(
+        {
+          _id: memberId,
+          memberStatus: MemberStatus.ACTIVE,
+          memberPassword: member.memberPassword,
+        },
+        { $set: { memberPassword }, $inc: { authVersion: 1 } },
+        { returnDocument: 'after', runValidators: true },
+      )
+      .exec();
+    if (!result)
+      throw new UnauthorizedException('Account changed; sign in again');
+    await this.authService.invalidateMemberSessions(memberId);
     result.accessToken = await this.authService.createToken(result);
     return result;
   }
+
   public async getMember(
     memberId: ObjectId | null,
     targetId: ObjectId,
@@ -127,9 +186,18 @@ export class MemberService {
           .exec();
         targetMember.memberViews!++;
       }
-      const likeInput = { memberId, likeRefId: targetId, likeGroup: LikeGroup.MEMBER };
-      targetMember.meLiked = (await this.likeService.checkLikeExistence(likeInput)) as any;
-      targetMember.meFollowed = await this.checkSubscription(memberId, targetId);
+      const likeInput = {
+        memberId,
+        likeRefId: targetId,
+        likeGroup: LikeGroup.MEMBER,
+      };
+      targetMember.meLiked = (await this.likeService.checkLikeExistence(
+        likeInput,
+      )) as any;
+      targetMember.meFollowed = await this.checkSubscription(
+        memberId,
+        targetId,
+      );
     }
     return targetMember;
   }
@@ -147,7 +215,11 @@ export class MemberService {
       [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC,
     };
 
-    if (text) match.memberNick = { $regex: new RegExp(text, 'i') };
+    if (text?.trim()) {
+      const escaped = text.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const search = { $regex: new RegExp(escaped, 'i') };
+      match.$or = [{ memberNick: search }, { memberFullName: search }];
+    }
 
     const result = await this.memberModel.aggregate([
       { $match: match },
@@ -197,12 +269,24 @@ export class MemberService {
     return result[0];
   }
   public async updateMemberByAdmin(input: MemberUpdate): Promise<Member> {
-    const { _id, ...update } = input;
+    if (input.memberPassword !== undefined) {
+      throw new BadRequestException(
+        'Passwords cannot be changed through profile updates',
+      );
+    }
+    const { _id, memberPassword, ...update } = input;
     const result = await this.memberModel
-      .findByIdAndUpdate(_id, { $set: update }, { returnDocument: 'after' })
+      .findByIdAndUpdate(
+        _id,
+        { $set: update },
+        { returnDocument: 'after', runValidators: true },
+      )
       .exec();
     if (!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);
 
+    if (input.memberStatus !== undefined || input.memberType !== undefined) {
+      await this.authService.invalidateMemberSessions(result._id);
+    }
     return result as Member;
   }
   public async memberStatsEditor(
@@ -211,7 +295,11 @@ export class MemberService {
     console.log('executed');
     const { _id, targetKey, modifier } = input;
     return await this.memberModel
-      .findOneAndUpdate({ _id }, { $inc: { [targetKey]: modifier } }, { new: true })
+      .findOneAndUpdate(
+        { _id },
+        { $inc: { [targetKey]: modifier } },
+        { new: true },
+      )
       .exec();
   }
 

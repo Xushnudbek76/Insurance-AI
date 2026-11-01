@@ -1,6 +1,10 @@
 import { Field, InputType, Int } from '@nestjs/graphql';
 import { IsIn, IsNotEmpty, IsOptional, Length, Min } from 'class-validator';
-import { MemberAuthType, MemberStatus, MemberType } from '../../enums/member.enum';
+import {
+  MemberAuthType,
+  MemberStatus,
+  MemberType,
+} from '../../enums/member.enum';
 import { availableAgentsSorts, availableMembersSorts } from '../../config';
 import { Direction } from '../../enums/common.enum';
 
@@ -12,7 +16,7 @@ export class MemberInput {
   memberNick: string;
 
   @IsNotEmpty()
-  @Length(5, 12)
+  @Length(8, 72)
   @Field(() => String)
   memberPassword: string;
 
@@ -37,7 +41,7 @@ export class LoginInput {
   memberNick: string;
 
   @IsNotEmpty()
-  @Length(5, 12)
+  @Length(5, 72)
   @Field(() => String)
   memberPassword: string;
 }

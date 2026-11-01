@@ -6,6 +6,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { AuthService } from '../auth.service';
+import { requestToken, verifiedMember } from '../session-security';
 import { Message } from '../../../libs/enums/common.enum';
 
 @Injectable()
@@ -18,16 +19,16 @@ export class AuthGuard implements CanActivate {
     if (context.contextType === 'graphql') {
       const request = context.getArgByIndex(2).req;
 
-      const bearerToken = request.headers.authorization;
+      const bearerToken = requestToken(request);
       if (!bearerToken) throw new BadRequestException(Message.TOKEN_NOT_EXIST);
 
-      const token = bearerToken.split(' ')[1],
+      const token = bearerToken,
         authMember = await this.authService.verifyToken(token);
       if (!authMember)
         throw new UnauthorizedException(Message.NOT_AUTHENTICATED);
 
       console.log('memberNick[auth] =>', authMember.memberNick);
-      request.body.authMember = authMember;
+      request[verifiedMember] = authMember;
 
       return true;
     }

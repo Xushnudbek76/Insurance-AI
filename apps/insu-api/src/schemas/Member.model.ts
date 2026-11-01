@@ -42,6 +42,8 @@ const MemberSchema = new Schema(
       required: true,
     },
 
+    authVersion: { type: Number, default: 0, select: true },
+
     memberFullName: {
       type: String,
     },
